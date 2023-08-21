@@ -8,6 +8,14 @@ using System.Text;
 using Institute_of_fine_arts.Dto;
 using System.ComponentModel.DataAnnotations;
 using Institute_of_fine_arts.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Institute_of_fine_arts.Controllers
 {
@@ -27,36 +35,40 @@ namespace Institute_of_fine_arts.Controllers
         [Route("register")]
         public IActionResult register(registerDto register)
         {
-            try
-            {
-                bool isExists = _context.Users.Any(u => u.Email.ToLower() == register.Email.ToLower());
-                if (isExists) return BadRequest("Email already used");
-                if (!register.Password.Equals(register.ConfirmPassword)) return BadRequest("Confirmation password is not correct");
-                var hashPassword = BCrypt.Net.BCrypt.HashPassword(register.Password);
-                var user = new Entities.User
+            using (var transaction = _context.Database.BeginTransaction())
+                try
                 {
-                    Email = register.Email,
-                    Name = register.Name,
-                    Password = hashPassword,
-                    Birthday = register.Birthday,
-                    Address = register.Address,
-                    RoleId = register.RoleId,
-                    Status = register.RoleId == 2 ? "Pending" : "Active",
-                    JoinDate = register.JoinDate,
-                };
-                _context.Users.Add(user);
-                _context.SaveChanges();
-                return Ok(new userDataDto
+                    bool isExists = _context.Users.Any(u => u.Email.ToLower() == register.Email.ToLower());
+                    if (isExists) return BadRequest("Email already used");
+                    if (!register.Password.Equals(register.ConfirmPassword)) return BadRequest("Confirmation password is not correct");
+                    var hashPassword = BCrypt.Net.BCrypt.HashPassword(register.Password);
+                    var user = new Entities.User
+                    {
+                        Email = register.Email,
+                        Name = register.Name,
+                        Password = hashPassword,
+                        Birthday = register.Birthday,
+                        Address = register.Address,
+                        RoleId = register.RoleId,
+                        Status = register.RoleId == 2 ? "Pending" : "Active",
+                        JoinDate = register.JoinDate,
+                        Tel = register.Telephone,
+                    };
+                    _context.Users.Add(user);
+                    _context.SaveChanges();
+                    transaction.Commit();
+                    return Ok(new userDataDto
+                    {
+                        Email = register.Email,
+                        Name = register.Name,
+                        Token = GenerateJWT(user)
+                    });
+                }
+                catch (Exception ex)
                 {
-                    Email = register.Email,
-                    Name = register.Name,
-                    Token = GenerateJWT(user)
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+                    transaction.Rollback();
+                    return StatusCode(500, ex.InnerException.Message);
+                }
         }
 
         [HttpPost]
@@ -153,6 +165,8 @@ namespace Institute_of_fine_arts.Controllers
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"]));
             var signatureKey = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),

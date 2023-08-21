@@ -4,6 +4,7 @@ using Institute_of_fine_arts.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Institute_of_fine_arts.Controllers
 {
@@ -64,13 +65,14 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpPost]
+        //[Authorize(Policy ="Manager")]
         public IActionResult create(createComprtitionDto createComprtition)
         {
             try
             {
                 if (createComprtition.StartDate <= DateTime.Now.AddDays(7) || createComprtition.EndDate <= createComprtition.StartDate)
                     return BadRequest("Invalid dates. Start date must be greater than the current time and end date must be greater than the start date.");
-
+                var token = HttpContext.Request.Headers["Authorization"];
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
                 if (identity == null) return Unauthorized();
                 var user = UserHelper.GetUserDataDto(identity);
@@ -144,29 +146,36 @@ namespace Institute_of_fine_arts.Controllers
         }
         private void UpdateStatus(object state)
         {
-            DateTime currentTime = DateTime.Now;
-            List<Competition> competitions = _context.Competitions.Where(x => x.EndDate >= currentTime).ToList();
-
-            foreach (var competition in competitions)
+            try
             {
+                DateTime currentTime = DateTime.Now;
+                List<Competition> competitions = _context.Competitions.Where(x => x.EndDate >= currentTime).ToList();
 
-
-                if (currentTime < competition.StartDate)
+                foreach (var competition in competitions)
                 {
 
-                    competition.Status = "Coming";
+
+                    if (currentTime < competition.StartDate)
+                    {
+
+                        competition.Status = "Coming";
+                    }
+                    else if (currentTime >= competition.StartDate && currentTime <= competition.EndDate)
+                    {
+                        competition.Status = "Process";
+                    }
+                    else if (currentTime > competition.EndDate)
+                    {
+                        competition.Status = "Finished";
+                    }
                 }
-                else if (currentTime >= competition.StartDate && currentTime <= competition.EndDate)
-                {
-                    competition.Status = "Process";
-                }
-                else if (currentTime > competition.EndDate)
-                {
-                    competition.Status = "Finished";
-                }
+
+                _context.SaveChanges();
             }
-
-            _context.SaveChanges();
+            catch (Exception ex)
+            {
+                StatusCode(500, ex.Message);
+            }
         }
     }
 }

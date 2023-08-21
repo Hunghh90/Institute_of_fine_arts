@@ -9,7 +9,7 @@ public partial class User
 
     public string Name { get; set; } = null!;
 
-    public DateTime Birthday { get; set; }
+    public DateTime? Birthday { get; set; }
 
     public string Email { get; set; } = null!;
 
@@ -17,7 +17,7 @@ public partial class User
 
     public string Tel { get; set; } = null!;
 
-    public DateTime JoinDate { get; set; }
+    public DateTime? JoinDate { get; set; }
 
     public int? RoleId { get; set; }
 
@@ -29,15 +29,15 @@ public partial class User
 
     public string? Address { get; set; }
 
-    public virtual ICollection<Art> Arts { get; set; } = new List<Art>();
+    public virtual ICollection<Art>? Arts { get; set; } = new List<Art>();
 
-    public virtual ICollection<Competition> Competitions { get; set; } = new List<Competition>();
+    public virtual ICollection<Competition>? Competitions { get; set; } = new List<Competition>();
 
-    public virtual ICollection<Evaluate> Evaluates { get; set; } = new List<Evaluate>();
+    public virtual ICollection<Evaluate>? Evaluates { get; set; } = new List<Evaluate>();
 
-    public virtual ICollection<Exibition> Exibitions { get; set; } = new List<Exibition>();
+    public virtual ICollection<Exibition>? Exibitions { get; set; } = new List<Exibition>();
 
-    public virtual ICollection<Prize> Prizes { get; set; } = new List<Prize>();
+    public virtual ICollection<Prize>? Prizes { get; set; } = new List<Prize>();
 
     public virtual Role? Role { get; set; }
 }

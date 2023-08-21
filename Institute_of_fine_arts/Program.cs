@@ -46,6 +46,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Director", policy => policy.RequireRole("5"));
+    options.AddPolicy("Admin", policy => policy.RequireRole("6"));
+    options.AddPolicy("Manager", policy => policy.RequireRole("1"));
+    options.AddPolicy("Teacher", policy => policy.RequireRole("2"));
+    options.AddPolicy("Student", policy => policy.RequireRole("3"));
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -54,10 +62,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseCors();
-app.UseStaticFiles();
+
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
