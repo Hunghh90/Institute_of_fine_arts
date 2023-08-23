@@ -9,9 +9,17 @@ public partial class Exibition
 
     public string Name { get; set; } = null!;
 
+    public string Slug { get; set; } = null!;
+
     public string? Theme { get; set; }
 
     public string? Description { get; set; }
+
+    public string? Status { get; set; }
+
+    public int? UserCreate { get; set; }
+
+    public int? UserActive { get; set; }
 
     public DateTime? StartDate { get; set; }
 
@@ -21,11 +29,9 @@ public partial class Exibition
 
     public DateTime? UpdatedAt { get; set; }
 
-    public string? Status { get; set; }
+    public virtual ICollection<ExibitionArt> ExibitionArts { get; set; } = new List<ExibitionArt>();
 
-    public string Slug { get; set; } = null!;
+    public virtual Manager? UserActiveNavigation { get; set; }
 
-    public int? UserId { get; set; }
-
-    public virtual User? User { get; set; }
+    public virtual Manager? UserCreateNavigation { get; set; }
 }

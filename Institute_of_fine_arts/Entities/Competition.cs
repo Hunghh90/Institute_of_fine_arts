@@ -9,29 +9,33 @@ public partial class Competition
 
     public string Name { get; set; } = null!;
 
-    public DateTime? StartDate { get; set; }
+    public string? Slug { get; set; }
 
-    public DateTime? EndDate { get; set; }
+    public DateTime StartDate { get; set; }
 
-    public string Theme { get; set; } = null!;
+    public DateTime EndDate { get; set; }
+
+    public string? Theme { get; set; }
 
     public string? Description { get; set; }
-
-    public DateTime? CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
 
     public string? Status { get; set; }
 
     public int? UserCreate { get; set; }
 
-    public string Slug { get; set; } = null!;
+    public int? UserActive { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<Art> Arts { get; set; } = new List<Art>();
 
-    public virtual ICollection<Evaluate> Evaluates { get; set; } = new List<Evaluate>();
+    public virtual ICollection<Judge> Judges { get; set; } = new List<Judge>();
 
     public virtual ICollection<Prize> Prizes { get; set; } = new List<Prize>();
 
-    public virtual User? UserCreateNavigation { get; set; }
+    public virtual Manager? UserActiveNavigation { get; set; }
+
+    public virtual Manager? UserCreateNavigation { get; set; }
 }

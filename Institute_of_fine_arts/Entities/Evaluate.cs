@@ -7,7 +7,7 @@ public partial class Evaluate
 {
     public int Id { get; set; }
 
-    public string Feedback { get; set; } = null!;
+    public string? Feedback { get; set; }
 
     public int Layout { get; set; }
 
@@ -17,19 +17,19 @@ public partial class Evaluate
 
     public int Creative { get; set; }
 
-    public decimal? Total { get; set; }
+    public int Total { get; set; }
 
-    public int? CompetitionId { get; set; }
+    public string? Status { get; set; }
 
-    public int? UserId { get; set; }
+    public int? ArtsId { get; set; }
+
+    public int? TeacherId { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
 
-    public string? Status { get; set; }
+    public virtual Art? Arts { get; set; }
 
-    public virtual Competition? Competition { get; set; }
-
-    public virtual User? User { get; set; }
+    public virtual User? Teacher { get; set; }
 }

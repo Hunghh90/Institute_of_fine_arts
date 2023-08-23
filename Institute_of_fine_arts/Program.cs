@@ -30,8 +30,10 @@ builder.Services.AddControllers()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+var connectionString = builder.Configuration.GetConnectionString("institute_of_fine_arts");
+Institute_of_fine_arts.Entities.InstituteOfFineArtsContext.connectionString = connectionString;
 builder.Services.AddDbContext<Institute_of_fine_arts.Entities.InstituteOfFineArtsContext>(
-    options => options.UseSqlServer(builder.Configuration.GetConnectionString("institute_of_fine_arts"))
+    options => options.UseSqlServer(builder.Configuration.GetConnectionString(connectionString))
 );
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -51,12 +53,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Admin", policy => policy.RequireRole("6"));
-    options.AddPolicy("Director", policy => policy.RequireRole("5"));
+    options.AddPolicy("Admin", policy => policy.RequireRole("5"));
+    options.AddPolicy("AdminAndManager", policy => policy.RequireRole("5", "1"));
+    options.AddPolicy("AllManager", policy => policy.RequireRole("5", "1","6"));
+    options.AddPolicy("Director", policy => policy.RequireRole("6"));
     options.AddPolicy("Manager", policy => policy.RequireRole("1"));
     options.AddPolicy("Teacher", policy => policy.RequireRole("2"));
     options.AddPolicy("Student", policy => policy.RequireRole("3"));
-
     options.AddPolicy("Auth", policy => policy.RequireAuthenticatedUser());
 });
 var app = builder.Build();

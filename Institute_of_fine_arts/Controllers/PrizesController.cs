@@ -1,6 +1,7 @@
 ﻿using Institute_of_fine_arts.Dto;
 using Institute_of_fine_arts.Entities;
 using Institute_of_fine_arts.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -9,6 +10,7 @@ namespace Institute_of_fine_arts.Controllers
 {
     [Route("api/prize")]
     [ApiController]
+    [Authorize(Policy = "Auth")]
     public class PrizesController : ControllerBase
     {
         private readonly InstituteOfFineArtsContext _context;
@@ -18,6 +20,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "Manager")]
         public IActionResult create(createPrizeDto createPrize)
         {
             try
@@ -33,7 +36,7 @@ namespace Institute_of_fine_arts.Controllers
                 {
                     Name = createPrize.Name,
                     Detail = createPrize.Detail,
-                    Quantity = createPrize.Quantity,
+                    Quantity = createPrize.Quantity.Value,
                     ConpetitionId = createPrize.CompetitionId,
                     UserCreate = user.Id,
                 };
@@ -49,6 +52,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult getByCompetition([FromQuery] int id)
         {
             try
@@ -72,6 +76,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpPut]
+        [Authorize(Policy = "Manager")]
         public IActionResult update([FromRoute] int id, updatePrizeDto updatePrize)
         {
             try
@@ -85,7 +90,7 @@ namespace Institute_of_fine_arts.Controllers
                 if (cp == null || cp.StartDate >= DateTime.Now) return BadRequest("Can't be changed");
                 p.Name = updatePrize.Name != null ? updatePrize.Name : p.Name;
                 p.Detail = updatePrize.Detail != null ? updatePrize.Detail : p.Detail;
-                p.Quantity = updatePrize.Quantity != null ? updatePrize.Quantity : p.Quantity;
+                p.Quantity = updatePrize.Quantity != null ? updatePrize.Quantity.Value : p.Quantity;
                 p.UserCreate = user.Id;
                 _context.SaveChanges();
                 return NoContent();
@@ -97,6 +102,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpDelete]
+        [Authorize(Policy = "Manager")]
         public IActionResult delete([FromRoute] int id)
         {
             try

@@ -15,29 +15,31 @@ public partial class User
 
     public string Password { get; set; } = null!;
 
-    public string Tel { get; set; } = null!;
+    public string? Avatar { get; set; }
+
+    public string? Telephone { get; set; }
+
+    public int? RoleId { get; set; }
+
+    public string? Address { get; set; }
 
     public DateTime? JoinDate { get; set; }
 
-    public int? RoleId { get; set; }
+    public string? Status { get; set; }
+
+    public int? UserCreate { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
 
-    public string? Status { get; set; }
+    public virtual ICollection<Art> Arts { get; set; } = new List<Art>();
 
-    public string? Address { get; set; }
+    public virtual ICollection<Evaluate> Evaluates { get; set; } = new List<Evaluate>();
 
-    public virtual ICollection<Art>? Arts { get; set; } = new List<Art>();
-
-    public virtual ICollection<Competition>? Competitions { get; set; } = new List<Competition>();
-
-    public virtual ICollection<Evaluate>? Evaluates { get; set; } = new List<Evaluate>();
-
-    public virtual ICollection<Exibition>? Exibitions { get; set; } = new List<Exibition>();
-
-    public virtual ICollection<Prize>? Prizes { get; set; } = new List<Prize>();
+    public virtual ICollection<Judge> Judges { get; set; } = new List<Judge>();
 
     public virtual Role? Role { get; set; }
+
+    public virtual Manager? UserCreateNavigation { get; set; }
 }

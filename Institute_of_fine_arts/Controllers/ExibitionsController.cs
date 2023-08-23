@@ -4,11 +4,13 @@ using Institute_of_fine_arts.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Institute_of_fine_arts.Controllers
 {
     [Route("api/exibition")]
     [ApiController]
+    [Authorize(Policy = "Auth")]
     public class ExibitionsController : ControllerBase
     {
         private InstituteOfFineArtsContext _context;
@@ -20,6 +22,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult get([FromQuery] string query)
         {
             try
@@ -64,6 +67,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "Manager")]
         public IActionResult create(createExibitionDto createExibition)
         {
             try
@@ -83,7 +87,7 @@ namespace Institute_of_fine_arts.Controllers
                     EndDate = createExibition.EndDate,
                     Theme = createExibition.Theme,
                     Description = createExibition.Description,
-                    UserId = user.Id,
+                    UserCreate = user.Id,
                 };
                 _context.Exibitions.Add(ex);
                 _context.SaveChanges();
@@ -96,6 +100,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpPut]
+        [Authorize(Policy = "Manager")]
         public IActionResult update([FromQuery] string slug, updateExibitionDto updateExibition)
         {
             try
@@ -110,7 +115,7 @@ namespace Institute_of_fine_arts.Controllers
                 ex.EndDate = updateExibition.EndDate != null ? updateExibition.EndDate : ex.EndDate;
                 ex.Theme = updateExibition.Theme != null ? updateExibition.Theme : ex.Theme;
                 ex.Description = updateExibition.Description != null ? updateExibition.Description : ex.Description;
-                ex.UserId = user.Id;
+                ex.UserCreate = user.Id;
                 ex.UpdatedAt = DateTime.Now;
                 _context.SaveChanges();
                 return NoContent();
@@ -122,6 +127,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpDelete]
+        [Authorize(Policy = "Manager")]
         public IActionResult delete([FromRoute] int id)
         {
             try

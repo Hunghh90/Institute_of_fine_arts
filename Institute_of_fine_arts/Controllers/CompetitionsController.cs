@@ -10,6 +10,7 @@ namespace Institute_of_fine_arts.Controllers
 {
     [Route("api/competition")]
     [ApiController]
+    [Authorize(Policy = "Auth")]
     public class CompetitionsController : ControllerBase
     {
         private InstituteOfFineArtsContext _context;
@@ -21,6 +22,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult get([FromQuery] string query)
         {
             try
@@ -82,9 +84,9 @@ namespace Institute_of_fine_arts.Controllers
                 var cp = new Entities.Competition
                 {
                     Name = createComprtition.Name,
-                    StartDate = createComprtition.StartDate,
+                    StartDate = createComprtition.StartDate.Value,
                     Slug = createComprtition.Slug,
-                    EndDate = createComprtition.EndDate,
+                    EndDate = createComprtition.EndDate.Value,
                     Theme = createComprtition.Theme,
                     Description = createComprtition.Description,
                     UserCreate = user.Id,
@@ -100,6 +102,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpPut]
+        [Authorize(Policy = "Manager")]
         public IActionResult update([FromQuery] string slug, updateCompetitionDto updateCompetition)
         {
             try
@@ -111,8 +114,8 @@ namespace Institute_of_fine_arts.Controllers
                 if (cp == null) return BadRequest("Competition is not Exists");
                 cp.Name = updateCompetition.Name != null ? updateCompetition.Name : cp.Name;
                 cp.Slug = updateCompetition.Slug != null ? updateCompetition.Slug : cp.Slug;
-                cp.StartDate = updateCompetition.StartDate != null ? updateCompetition.StartDate : cp.StartDate;
-                cp.EndDate = updateCompetition.EndDate != null ? updateCompetition.EndDate : cp.EndDate;
+                cp.StartDate = updateCompetition.StartDate != null ? updateCompetition.StartDate.Value : cp.StartDate;
+                cp.EndDate = updateCompetition.EndDate != null ? updateCompetition.EndDate.Value : cp.EndDate;
                 cp.Theme = updateCompetition.Theme != null ? updateCompetition.Theme : cp.Theme;
                 cp.Description = updateCompetition.Description != null ? updateCompetition.Description : cp.Description;
                 cp.UserCreate = user.Id;
@@ -127,6 +130,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpDelete]
+        [Authorize(Policy = "Manager")]
         public IActionResult delete([FromRoute] int id)
         {
             try

@@ -22,7 +22,7 @@ namespace Institute_of_fine_arts.Controllers
     
     [ApiController]
     [Route("api/auth")]
-    //[Authorize(Policy = "Auth")]
+    [Authorize(Policy = "Auth")]
 
     public class AuthController : ControllerBase
     {
@@ -35,47 +35,8 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpPost]
-        [Route("register")]
-        public IActionResult register(registerDto register)
-        {
-            using (var transaction = _context.Database.BeginTransaction())
-                try
-                {
-                    bool isExists = _context.Users.Any(u => u.Email.ToLower() == register.Email.ToLower());
-                    if (isExists) return BadRequest("Email already used");
-                    if (!register.Password.Equals(register.ConfirmPassword)) return BadRequest("Confirmation password is not correct");
-                    var hashPassword = BCrypt.Net.BCrypt.HashPassword(register.Password);
-                    var user = new Entities.User
-                    {
-                        Email = register.Email,
-                        Name = register.Name,
-                        Password = hashPassword,
-                        Birthday = register.Birthday,
-                        Address = register.Address,
-                        RoleId = register.RoleId,
-                        Status = register.RoleId == 2 ? "Pending" : "Active",
-                        JoinDate = register.JoinDate,
-                        Tel = register.Telephone,
-                    };
-                    _context.Users.Add(user);
-                    _context.SaveChanges();
-                    transaction.Commit();
-                    return Ok(new userDataDto
-                    {
-                        Email = register.Email,
-                        Name = register.Name,
-                        Token = GenerateJWT(user)
-                    });
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    return StatusCode(500, ex.InnerException.Message);
-                }
-        }
-
-        [HttpPost]
         [Route("login")]
+        [AllowAnonymous]
         public IActionResult login(loginDto login)
         {
             try
@@ -99,26 +60,7 @@ namespace Institute_of_fine_arts.Controllers
             }
 
         }
-        [HttpPut]
-        public IActionResult approveTeacher([FromRoute] int id)
-        {
-            try
-            {
-                var user = _context.Users.Find(id);
-                if (user != null && user.Status == "Pending")
-                {
-                    user.Status = "Active";
-                    _context.SaveChanges();
-                    return Ok();
-                }
-                return BadRequest("Unregistered or activated email");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
+        
         [HttpPost]
         [Route("change-password")]
         public IActionResult changePassword(changerPasswordDto changerPasswordDto)
@@ -145,26 +87,6 @@ namespace Institute_of_fine_arts.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
-        [HttpDelete]
-        public IActionResult delete([FromRoute] int id)
-        {
-            try
-            {
-                var identity = HttpContext.User.Identity as ClaimsIdentity;
-                if (identity == null) return Unauthorized();
-                var u = UserHelper.GetUserDataDto(identity);
-                var user = _context.Users.Find(id);
-                if (user == null) return NotFound();
-                user.Status = "Block";
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
         [HttpGet]
         [Route("profile")]
         public IActionResult getProfile()
@@ -172,20 +94,9 @@ namespace Institute_of_fine_arts.Controllers
             try
             {
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
-                if (identity != null)
-                {
-                    var userClaims = identity.Claims;
-                    var Id = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-                    var user = new userDataDto
-                    {
-                        Id = Convert.ToInt32(Id),
-                        Name = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value,
-                        Email = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value
-                    };
+                if (identity == null || !identity.IsAuthenticated) return Unauthorized();
+                var user = UserHelper.GetUserDataDto(identity);
                     return Ok(user);
-                }
-                return Unauthorized();
-            
             }catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);
@@ -212,8 +123,6 @@ namespace Institute_of_fine_arts.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-
     }
 }
 
