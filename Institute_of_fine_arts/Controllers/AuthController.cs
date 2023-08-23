@@ -19,8 +19,11 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Institute_of_fine_arts.Controllers
 {
-    [Route("api/auth")]
+    
     [ApiController]
+    [Route("api/auth")]
+    //[Authorize(Policy = "Auth")]
+
     public class AuthController : ControllerBase
     {
         private readonly InstituteOfFineArtsContext _context;
@@ -161,18 +164,43 @@ namespace Institute_of_fine_arts.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet]
+        [Route("profile")]
+        public IActionResult getProfile()
+        {
+            try
+            {
+                var identity = HttpContext.User.Identity as ClaimsIdentity;
+                if (identity != null)
+                {
+                    var userClaims = identity.Claims;
+                    var Id = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+                    var user = new userDataDto
+                    {
+                        Id = Convert.ToInt32(Id),
+                        Name = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value,
+                        Email = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value
+                    };
+                    return Ok(user);
+                }
+                return Unauthorized();
+            
+            }catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
         private String GenerateJWT(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"]));
             var signatureKey = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
                 new Claim(ClaimTypes.Name,user.Name),
                 new Claim(ClaimTypes.Email,user.Email),
-                new Claim(ClaimTypes.Role, user.RoleId.ToString()),
+                new Claim(ClaimTypes.Role,user.RoleId.ToString()),
             };
             var token = new JwtSecurityToken(
                 _config["JWT:Issuer"],
@@ -184,6 +212,8 @@ namespace Institute_of_fine_arts.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+
     }
 }
 

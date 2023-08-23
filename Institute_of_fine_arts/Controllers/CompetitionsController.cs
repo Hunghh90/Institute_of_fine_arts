@@ -65,7 +65,7 @@ namespace Institute_of_fine_arts.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Policy ="Manager")]
+        [Authorize(Policy = "Manager")]
         public IActionResult create(createComprtitionDto createComprtition)
         {
             try
@@ -74,7 +74,8 @@ namespace Institute_of_fine_arts.Controllers
                     return BadRequest("Invalid dates. Start date must be greater than the current time and end date must be greater than the start date.");
                 var token = HttpContext.Request.Headers["Authorization"];
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
-                if (identity == null) return Unauthorized();
+                if (!identity.IsAuthenticated) 
+                    return Unauthorized();
                 var user = UserHelper.GetUserDataDto(identity);
                 var check = _context.Competitions.FirstOrDefault(c => c.Name.ToLower() == createComprtition.Name.ToLower());
                 if (check != null) return BadRequest("Competition is Exists");
