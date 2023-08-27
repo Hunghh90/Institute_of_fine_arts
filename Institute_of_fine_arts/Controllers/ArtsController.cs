@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.IO;
+using System;
+using System.Collections.Generic;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+
 namespace Institute_of_fine_arts.Controllers
 {
     [Route("api/art")]
@@ -33,15 +37,15 @@ namespace Institute_of_fine_arts.Controllers
                 {
                     return BadRequest("Invalid image type");
                 }
-                var path = "wwwroot/uploads";
+                var path = "wwwroot/uploads/arts";
                 var fileName = Guid.NewGuid().ToString() + Path.GetFileName(image.FileName);
                 var upload = Path.Combine(Directory.GetCurrentDirectory(), path, fileName);
                 image.CopyTo(new FileStream(upload, FileMode.Create));
-                var rs = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
+                var rs = $"{Request.Scheme}://{Request.Host}/uploads/arts/{fileName}";
                 var response = new uploadDto
                 {
                     Rs = rs,
-                    Path = path+"/"+fileName ,
+                    Path = path + "/" + fileName,
                 };
 
                 return Ok(response);
@@ -60,6 +64,7 @@ namespace Institute_of_fine_arts.Controllers
             using (var transaction = _context.Database.BeginTransaction())
                 try
                 {
+                    Guid slug = Guid.NewGuid();
                     var identity = HttpContext.User.Identity as ClaimsIdentity;
                     if (identity == null || !identity.IsAuthenticated) return Unauthorized();
                     var user = UserHelper.GetUserDataDto(identity);
@@ -68,7 +73,7 @@ namespace Institute_of_fine_arts.Controllers
                     var art = new Entities.Art
                     {
                         Name = createArt.Name,
-                        Slug = createArt.Slug,
+                        Slug = slug.ToString(),
                         IsSell = createArt.IsSell,
                         Price = createArt.Price,
                         Description = createArt.Description,
@@ -92,18 +97,18 @@ namespace Institute_of_fine_arts.Controllers
         }
         [HttpPut]
         [Route("update")]
-        [Authorize(Policy ="Student")]
+        [Authorize(Policy = "Student")]
         public IActionResult updateArt(updateArtDto updateArt)
         {
-            using(var transaction = _context.Database.BeginTransaction())
-            try
-            {
+            using (var transaction = _context.Database.BeginTransaction())
+                try
+                {
                     var identity = HttpContext.User.Identity as ClaimsIdentity;
                     var user = UserHelper.GetUserDataDto(identity);
                     var a = _context.Arts
-                        .FirstOrDefault(a=>
-                        a.OwnerId == user.Id && 
-                        a.CompetitionId== updateArt.CompetitionId);
+                        .FirstOrDefault(a =>
+                        a.OwnerId == user.Id &&
+                        a.CompetitionId == updateArt.CompetitionId);
                     if (a != null)
                     {
                         if (updateArt.Url == null && updateArt.Path == null)
@@ -124,8 +129,8 @@ namespace Institute_of_fine_arts.Controllers
                             a.Name = updateArt.Name ?? a.Name;
                             a.Slug = updateArt.Slug ?? a.Slug;
                             a.Description = updateArt.Description ?? a.Description;
-                            a.IsSell = updateArt.IsSell != null  ? updateArt.IsSell: a.IsSell;
-                            a.Price = updateArt.Price != null ? updateArt.Price: a.Price;
+                            a.IsSell = updateArt.IsSell != null ? updateArt.IsSell : a.IsSell;
+                            a.Price = updateArt.Price != null ? updateArt.Price : a.Price;
                             a.Url = updateArt.Url;
                             a.Path = updateArt.Path;
                             a.UpdatedAt = DateTime.Now;
@@ -141,20 +146,69 @@ namespace Institute_of_fine_arts.Controllers
                     }
                 }
                 catch (Exception ex)
-            {
+                {
                     transaction.Rollback();
-                return StatusCode(500, ex.Message);
-            }
+                    return StatusCode(500, ex.Message);
+                }
         }
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult getAllArtIsPrize()
+        public ArtPaginator GetArts([FromQuery] getArtsDto dto)
+        {
+            if (dto.Page == null) dto.Page = 1;
+            if (dto.Limit == null) dto.Limit = 30;
+            int startIndex = (dto.Page.Value - 1) * dto.Limit.Value;
+            int endIndex = dto.Page.Value * dto.Limit.Value;
+
+            List<Art> query = _context.Arts.ToList();
+
+            if (!string.IsNullOrEmpty(dto.Search))
+            {
+                string[] parseSearchParams = dto.Search.Split(';');
+                List<Dictionary<string, string>> searchText = new List<Dictionary<string, string>>();
+
+                foreach (string searchParam in parseSearchParams)
+                {
+                    string[] keyValue = searchParam.Split(':');
+                    string key = keyValue[0];
+                    string value = keyValue[1];
+                    if (key == "PrizeId" && value == "!=null")
+                    {
+                        query = query.Where(art => art.PrizeId != null).ToList();
+                    }
+                    else
+                    {
+                        searchText.Add(new Dictionary<string, string>
+        {
+            { key, value }
+        });
+                    }
+                }
+
+                query = query.Where(product =>
+                    searchText.All(search =>
+                         product.GetType().GetProperty(search.Keys.First())?.GetValue(product)?.ToString() == search.Values.First()
+                    )
+                ).ToList();
+            }
+            List<Art> results = query.Skip(startIndex).Take(dto.Limit.Value).ToList();
+            string url = $"/products?search={dto.Search}&limit={dto.Limit}";
+
+            return new ArtPaginator
+            {
+                Data = results.ToArray(),
+                PaginatorInfo = PaginationHelper.paginate(query.Count(), dto.Page.Value, dto.Limit.Value, results.Count, url)
+            };
+        }
+
+        [HttpGet]
+        [Route("get-one")]
+        public IActionResult getOne(int ownerId, int competitionId)
         {
             try
             {
-                var data = _context.Arts.Where(a=>a.PrizeId != null).ToList();
-                if (data.Count < 1) return NotFound();
+                var data = _context.Arts.FirstOrDefault(a => a.OwnerId == ownerId && a.CompetitionId == competitionId);
                 return Ok(data);
             }catch(Exception ex)
             {
@@ -180,5 +234,7 @@ namespace Institute_of_fine_arts.Controllers
                 Console.WriteLine($"Error deleting image: {ex.Message}");
             }
         }
+
     }
 }
+

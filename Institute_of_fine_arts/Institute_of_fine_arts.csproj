@@ -29,7 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\uploads\" />
+    <Folder Include="wwwroot\uploads\competitions\" />
+    <Folder Include="wwwroot\uploads\arts\" />
+    <Folder Include="wwwroot\uploads\exibition\" />
+    <Folder Include="wwwroot\uploads\avartar\" />
   </ItemGroup>
 
 </Project>

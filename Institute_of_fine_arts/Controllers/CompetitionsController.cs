@@ -18,20 +18,59 @@ namespace Institute_of_fine_arts.Controllers
         public CompetitionsController(InstituteOfFineArtsContext context)
         {
             _context = context;
+
+        }
+        public void StartTimer()
+        {
             _timer = new Timer(UpdateStatus, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        }
+
+        [HttpPost]
+        [Route("upload")]
+        [Authorize(Policy = "Manager")]
+        public IActionResult uploadImage(IFormFile image)
+        {
+            try
+            {
+                if (image == null || image.Length == 0)
+                {
+                    return BadRequest("No image uploaded");
+                }
+                if (image.ContentType != "image/jpeg")
+                {
+                    return BadRequest("Invalid image type");
+                }
+                var path = "wwwroot/uploads/competitions";
+                var fileName = Guid.NewGuid().ToString() + Path.GetFileName(image.FileName);
+                var upload = Path.Combine(Directory.GetCurrentDirectory(), path, fileName);
+                image.CopyTo(new FileStream(upload, FileMode.Create));
+                var rs = $"{Request.Scheme}://{Request.Host}/uploads/competitions/{fileName}";
+                var response = new uploadDto
+                {
+                    Rs = rs,
+                    Path = path + "/" + fileName,
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult get([FromQuery] string query)
+        public IActionResult Index([FromQuery] string? query)
         {
             try
             {
+
                 List<competitionDto> data;
                 if (query != null)
                 {
                     data = _context.Competitions
-                       .Where(data => data.Name.Contains(query))
+                       .Where(data => data.Name.Contains(query) || data.Status.Contains(query))
                        .Select(u => new competitionDto
                        {
                            Name = u.Name,
@@ -54,10 +93,55 @@ namespace Institute_of_fine_arts.Controllers
                        EndDate = u.EndDate,
                        Description = u.Description,
                        Theme = u.Theme,
+                       Image = u.Image,
                    })
                    .ToList();
                 }
 
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        [HttpGet("{slug}")]
+        [AllowAnonymous]
+        public IActionResult getSlug([FromRoute] string? slug)
+        {
+            try
+            {
+                var data = _context.Competitions
+                       .Where(data => data.Slug == slug)
+                       .Select(u => new competitionDto
+                       {
+                           Id = u.Id,
+                           Name = u.Name,
+                           StartDate = u.StartDate,
+                           Slug = u.Slug,
+                           EndDate = u.EndDate,
+                           Description = u.Description,
+                           Theme = u.Theme,
+                           Image = u.Image,
+                       })
+                       .FirstOrDefault();
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("top")]
+        public IActionResult topCompetition()
+        {
+            try
+            {
+                var data = _context.Competitions.OrderByDescending(c => c.Prizes.Sum(p => p.Price * p.Quantity)).ToList();
                 return Ok(data);
             }
             catch (Exception ex)
@@ -76,7 +160,7 @@ namespace Institute_of_fine_arts.Controllers
                     return BadRequest("Invalid dates. Start date must be greater than the current time and end date must be greater than the start date.");
                 var token = HttpContext.Request.Headers["Authorization"];
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
-                if (!identity.IsAuthenticated) 
+                if (!identity.IsAuthenticated)
                     return Unauthorized();
                 var user = UserHelper.GetUserDataDto(identity);
                 var check = _context.Competitions.FirstOrDefault(c => c.Name.ToLower() == createComprtition.Name.ToLower());
@@ -154,7 +238,7 @@ namespace Institute_of_fine_arts.Controllers
             try
             {
                 DateTime currentTime = DateTime.Now;
-                List<Competition> competitions = _context.Competitions.Where(x => x.EndDate >= currentTime).ToList();
+                var competitions = _context.Competitions.Where(x => x.EndDate >= currentTime).ToList();
 
                 foreach (var competition in competitions)
                 {

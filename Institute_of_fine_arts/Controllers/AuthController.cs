@@ -123,6 +123,13 @@ namespace Institute_of_fine_arts.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        [HttpPost]
+        [Route("logout")]
+        public IActionResult logout()
+        {
+            return Ok(true);
+        }
     }
 }
 

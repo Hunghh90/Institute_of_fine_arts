@@ -55,7 +55,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Admin", policy => policy.RequireRole("5"));
     options.AddPolicy("AdminAndManager", policy => policy.RequireRole("5", "1"));
-    options.AddPolicy("AllManager", policy => policy.RequireRole("5", "1","6"));
+    options.AddPolicy("AllManager", policy => policy.RequireRole("5", "1", "6"));
     options.AddPolicy("Director", policy => policy.RequireRole("6"));
     options.AddPolicy("Manager", policy => policy.RequireRole("1"));
     options.AddPolicy("Teacher", policy => policy.RequireRole("2"));

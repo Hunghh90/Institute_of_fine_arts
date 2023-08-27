@@ -35,7 +35,8 @@ namespace Institute_of_fine_arts.Controllers
                 var pr = new Entities.Prize
                 {
                     Name = createPrize.Name,
-                    Detail = createPrize.Detail,
+                    Slug = createPrize.Slug,
+                    Price = createPrize.Price,
                     Quantity = createPrize.Quantity.Value,
                     ConpetitionId = createPrize.CompetitionId,
                     UserCreate = user.Id,
@@ -59,11 +60,13 @@ namespace Institute_of_fine_arts.Controllers
             {
                 var data = _context.Prizes
                     .Where(p => p.ConpetitionId == id)
+                    .OrderBy(p => p.Slug)
                     .Select(s => new prizeDto
                     {
                         Name = s.Name,
-                        Detail = s.Detail,
-                        Quantity = s.Quantity
+                        Price = s.Price,
+                        Quantity = s.Quantity,
+                        Slug = s.Slug,
                     })
                     .ToList();
                 if (data.Count < 1) return BadRequest("There are no prizes for this contest yet");
@@ -89,7 +92,7 @@ namespace Institute_of_fine_arts.Controllers
                 var cp = _context.Competitions.Find(p.ConpetitionId);
                 if (cp == null || cp.StartDate >= DateTime.Now) return BadRequest("Can't be changed");
                 p.Name = updatePrize.Name != null ? updatePrize.Name : p.Name;
-                p.Detail = updatePrize.Detail != null ? updatePrize.Detail : p.Detail;
+                p.Price = updatePrize.Price != null ? updatePrize.Price : p.Price;
                 p.Quantity = updatePrize.Quantity != null ? updatePrize.Quantity.Value : p.Quantity;
                 p.UserCreate = user.Id;
                 _context.SaveChanges();

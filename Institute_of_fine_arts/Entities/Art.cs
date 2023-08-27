@@ -7,11 +7,11 @@ public partial class Art
 {
     public int Id { get; set; }
 
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     public string? Slug { get; set; }
 
-    public string Description { get; set; }
+    public string Description { get; set; } = null!;
 
     public bool? IsSell { get; set; }
 
@@ -33,17 +33,17 @@ public partial class Art
 
     public string? Status { get; set; }
 
-    public DateTime? CreatedAt { get; set; } 
+    public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
 
-    public virtual Competition? Competition { get; set; }
+    public virtual Competition Competition { get; set; } = null!;
 
-    public virtual ICollection<Evaluate>? Evaluates { get; set; }
+    public virtual ICollection<Evaluate> Evaluates { get; set; } = new List<Evaluate>();
 
-    public virtual ICollection<ExibitionArt>? ExibitionArts { get; set; } 
+    public virtual ICollection<ExibitionArt> ExibitionArts { get; set; } = new List<ExibitionArt>();
 
-    public virtual User? Owner { get; set; }
+    public virtual User Owner { get; set; } = null!;
 
     public virtual Prize? Prize { get; set; }
 }

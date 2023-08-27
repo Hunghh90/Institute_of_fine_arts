@@ -29,6 +29,8 @@ public partial class Competition
 
     public DateTime? UpdatedAt { get; set; }
 
+    public string? Image { get; set; }
+
     public virtual ICollection<Art> Arts { get; set; } = new List<Art>();
 
     public virtual ICollection<Judge> Judges { get; set; } = new List<Judge>();

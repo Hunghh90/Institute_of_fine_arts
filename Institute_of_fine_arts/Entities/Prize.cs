@@ -11,8 +11,6 @@ public partial class Prize
 
     public string Slug { get; set; } = null!;
 
-    public string Detail { get; set; } = null!;
-
     public int Quantity { get; set; }
 
     public int? ConpetitionId { get; set; }
@@ -26,6 +24,8 @@ public partial class Prize
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
+
+    public decimal? Price { get; set; }
 
     public virtual ICollection<Art> Arts { get; set; } = new List<Art>();
 
