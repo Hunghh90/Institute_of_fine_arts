@@ -25,7 +25,7 @@ namespace Institute_of_fine_arts.Controllers
         [HttpPost]
         [Route("upload")]
         [Authorize(Policy = "Student")]
-        public IActionResult uploadImage(IFormFile image)
+        public IActionResult uploadImage(IFormFile? image)
         {
             try
             {
@@ -33,7 +33,7 @@ namespace Institute_of_fine_arts.Controllers
                 {
                     return BadRequest("No image uploaded");
                 }
-                if (image.ContentType != "image/jpeg")
+                if (image.ContentType != "image/jpeg" && image.ContentType != "image/jpg" && image.ContentType != "image/png")
                 {
                     return BadRequest("Invalid image type");
                 }

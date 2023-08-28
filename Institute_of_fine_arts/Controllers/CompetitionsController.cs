@@ -20,10 +20,10 @@ namespace Institute_of_fine_arts.Controllers
             _context = context;
 
         }
-        public void StartTimer()
-        {
-            _timer = new Timer(UpdateStatus, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-        }
+        //public void StartTimer()
+        //{
+        //    _timer = new Timer(UpdateStatus, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        //}
 
         [HttpPost]
         [Route("upload")]

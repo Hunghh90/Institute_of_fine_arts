@@ -18,7 +18,7 @@ namespace Institute_of_fine_arts.Controllers
         public ExibitionsController(InstituteOfFineArtsContext context)
         {
             _context = context;
-            _timer = new Timer(UpdateStatus, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            //_timer = new Timer(UpdateStatus, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         }
 
         [HttpGet]
