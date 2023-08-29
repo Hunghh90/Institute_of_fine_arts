@@ -30,7 +30,7 @@ builder.Services.AddControllers()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-var connectionString = builder.Configuration.GetConnectionString("institute_of_fine_arts");
+var connectionString = builder.Configuration.GetConnectionString("institute_of_fine_art");
 Institute_of_fine_arts.Entities.InstituteOfFineArtsContext.connectionString = connectionString;
 builder.Services.AddDbContext<Institute_of_fine_arts.Entities.InstituteOfFineArtsContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString(connectionString))

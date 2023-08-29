@@ -69,25 +69,59 @@ namespace Institute_of_fine_arts.Controllers
                     if (identity == null || !identity.IsAuthenticated) return Unauthorized();
                     var user = UserHelper.GetUserDataDto(identity);
                     if (user == null) return Unauthorized();
-
-                    var art = new Entities.Art
+                    var a = _context.Arts.FirstOrDefault(a => a.CompetitionId == createArt.CompetitionId && a.OwnerId == user.Id);
+                    if (a == null)
                     {
-                        Name = createArt.Name,
-                        Slug = slug.ToString(),
-                        IsSell = createArt.IsSell,
-                        Price = createArt.Price,
-                        Description = createArt.Description,
-                        Url = createArt.Url,
-                        Path = createArt.Path,
-                        Status = "Submitedd",
-                        CompetitionId = createArt.CompetitionId,
-                        OwnerId = user.Id.Value,
-                        CreatedAt = DateTime.Now,
-                    };
-                    _context.Arts.Add(art);
-                    _context.SaveChanges();
-                    transaction.Commit();
-                    return Ok();
+                        var art = new Entities.Art
+                        {
+                            Name = createArt.Name,
+                            Slug = slug.ToString(),
+                            IsSell = createArt.IsSell,
+                            Price = createArt.Price,
+                            Description = createArt.Description,
+                            Url = createArt.Url,
+                            Path = createArt.Path,
+                            Status = "Submitedd",
+                            CompetitionId = createArt.CompetitionId,
+                            OwnerId = user.Id.Value,
+                            CreatedAt = DateTime.Now,
+                        };
+                        _context.Arts.Add(art);
+                        _context.SaveChanges();
+                        transaction.Commit();
+                        return Ok();
+                    }else
+                    {
+                        if (createArt.Url == null && createArt.Path == null)
+                        {
+                            a.Name = createArt.Name ?? a.Name;
+                            a.Slug = createArt.Slug ?? a.Slug;
+                            a.Description = createArt.Description ?? a.Description;
+                            a.IsSell = createArt.IsSell != null ? createArt.IsSell : a.IsSell;
+                            a.Price = createArt.Price != null ? createArt.Price : a.Price;
+                            a.UpdatedAt = DateTime.Now;
+                        }
+                        else
+                        {
+                            if (a.Url != null)
+                            {
+                                DeleteImage(a.Url);
+                            }
+                            a.Name = createArt.Name ?? a.Name;
+                            a.Slug = createArt.Slug ?? a.Slug;
+                            a.Description = createArt.Description ?? a.Description;
+                            a.IsSell = createArt.IsSell != null ? createArt.IsSell : a.IsSell;
+                            a.Price = createArt.Price != null ? createArt.Price : a.Price;
+                            a.Url = createArt.Url;
+                            a.Path = createArt.Path;
+                            a.UpdatedAt = DateTime.Now;
+                        }
+
+                        _context.SaveChanges();
+                        transaction.Commit();
+                        return NoContent();
+                    }
+                    
                 }
                 catch (Exception ex)
                 {

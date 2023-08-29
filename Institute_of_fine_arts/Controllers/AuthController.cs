@@ -117,7 +117,7 @@ namespace Institute_of_fine_arts.Controllers
                 _config["JWT:Issuer"],
                 _config["JWT:Audience"],
                 claims,
-                expires: DateTime.Now.AddHours(2),
+                expires: DateTime.Now.AddDays(1),
                 signingCredentials: signatureKey
                 );
 
