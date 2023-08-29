@@ -59,7 +59,7 @@ namespace Institute_of_fine_arts.Controllers
         [HttpPost]
         [Route("create")]
         [Authorize(Policy = "Student")]
-        public IActionResult createArt(createArtDto createArt)
+        public IActionResult createArt([FromBody]createArtDto? createArt)
         {
             using (var transaction = _context.Database.BeginTransaction())
                 try
