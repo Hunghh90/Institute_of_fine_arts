@@ -33,19 +33,10 @@ builder.Services.AddControllers()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-try
-{
-    // Đăng ký dịch vụ EmailService
-    builder.Services.AddScoped<IEmailService, EmailService>();
 
-    // Các đăng ký dịch vụ khác...
-}
-catch (Exception ex)
-{
-    // Ghi lại lỗi vào bất kỳ đâu bạn muốn (ví dụ: log file, cơ sở dữ liệu, console)
-    Console.WriteLine($"Error during service registration: {ex.Message}");
-    throw;
-}
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+
 var connectionString = builder.Configuration.GetConnectionString("institute_of_fine_art");
 Institute_of_fine_arts.Entities.InstituteOfFineArtsContext.connectionString = connectionString;
 builder.Services.AddDbContext<Institute_of_fine_arts.Entities.InstituteOfFineArtsContext>(

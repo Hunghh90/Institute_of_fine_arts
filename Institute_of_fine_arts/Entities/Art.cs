@@ -37,6 +37,8 @@ public partial class Art
 
     public DateTime? UpdatedAt { get; set; }
 
+    public byte? Granded { get; set; }
+
     public virtual Competition Competition { get; set; } = null!;
 
     public virtual ICollection<Evaluate> Evaluates { get; set; } = new List<Evaluate>();

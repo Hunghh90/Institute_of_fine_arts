@@ -79,6 +79,7 @@ namespace Institute_of_fine_arts.Controllers
                            EndDate = u.EndDate,
                            Description = u.Description,
                            Theme = u.Theme,
+                           Status = u.Status,
                        })
                        .ToList();
                 }
@@ -94,6 +95,7 @@ namespace Institute_of_fine_arts.Controllers
                        Description = u.Description,
                        Theme = u.Theme,
                        Image = u.Image,
+                       Status = u.Status,
                    })
                    .ToList();
                 }

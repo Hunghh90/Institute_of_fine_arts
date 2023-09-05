@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Institute_of_fine_arts.Services;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Institute_of_fine_arts.Controllers
 {
@@ -64,22 +65,22 @@ namespace Institute_of_fine_arts.Controllers
         [Authorize(Policy = "Student")]
         public IActionResult createArt([FromBody] createArtDto? createArt)
         {
-            using (var transaction = _context.Database.BeginTransaction())
-                try
+            try
+            {
+                Guid slug = Guid.NewGuid();
+                var identity = HttpContext.User.Identity as ClaimsIdentity;
+                if (identity == null || !identity.IsAuthenticated) return Unauthorized();
+                var user = UserHelper.GetUserDataDto(identity);
+                if (user == null) return Unauthorized();
+                var a = _context.Arts.FirstOrDefault(a => a.CompetitionId == createArt.CompetitionId && a.OwnerId == user.Id);
+                var competition = _context.Competitions.FirstOrDefault(x => x.Id == createArt.CompetitionId);
+                if (a == null)
                 {
-                    Guid slug = Guid.NewGuid();
-                    var identity = HttpContext.User.Identity as ClaimsIdentity;
-                    if (identity == null || !identity.IsAuthenticated) return Unauthorized();
-                    var user = UserHelper.GetUserDataDto(identity);
-                    if (user == null) return Unauthorized();
-                    var a = _context.Arts.FirstOrDefault(a => a.CompetitionId == createArt.CompetitionId && a.OwnerId == user.Id);
-                    var competition = _context.Competitions.FirstOrDefault(x => x.Id == createArt.CompetitionId);
-                    if (a == null)
+                    if (createArt.Name != "" && createArt.Description != "" && createArt.Url != "" && createArt.Path != "")
                     {
                         var art = new Entities.Art
                         {
                             Name = createArt.Name,
-                            Slug = slug.ToString(),
                             IsSell = createArt.IsSell,
                             Price = createArt.Price,
                             Description = createArt.Description,
@@ -92,8 +93,9 @@ namespace Institute_of_fine_arts.Controllers
                         };
                         _context.Arts.Add(art);
                         _context.SaveChanges();
-                        transaction.Commit();
-
+                        var s = _context.Arts.FirstOrDefault(a => a.CompetitionId == createArt.CompetitionId && a.OwnerId == user.Id);
+                        s.Slug = $"{competition.Name} - E{s.Id}";
+                        _context.SaveChanges();
                         var emailDto = new EmailDto
                         {
                             To = user.Email,
@@ -106,63 +108,50 @@ namespace Institute_of_fine_arts.Controllers
                             Name = user.Name,
                             Url = createArt.Path,
                         };
+                        
+                      
                         _emailService.SendEmail(emailDto);
+                    
                         return Ok();
                     }
                     else
                     {
-                        if (createArt.Url == null && createArt.Path == null)
-                        {
-                            a.Name = createArt.Name ?? a.Name;
-                            a.Slug = createArt.Slug ?? a.Slug;
-                            a.Description = createArt.Description ?? a.Description;
-                            a.IsSell = createArt.IsSell != null ? createArt.IsSell : a.IsSell;
-                            a.Price = createArt.Price != null ? createArt.Price : a.Price;
-                            a.UpdatedAt = DateTime.Now;
-                           
-                        }
-                        else
-                        {
-                            if (a.Url != null)
-                            {
-                                DeleteImage(a.Url);
-                            }
-                            a.Name = createArt.Name ?? a.Name;
-                            a.Slug = createArt.Slug ?? a.Slug;
-                            a.Description = createArt.Description ?? a.Description;
-                            a.IsSell = createArt.IsSell != null ? createArt.IsSell : a.IsSell;
-                            a.Price = createArt.Price != null ? createArt.Price : a.Price;
-                            a.Url = createArt.Url;
-                            a.Path = createArt.Path;
-                            a.UpdatedAt = DateTime.Now;
-                        }
-
-                        _context.SaveChanges();
-                       
-                        var emailDto = new EmailDto
-                        {
-                            To = user.Email,
-                            Subject = $"Update the test successfully {competition.Name}",
-                            Body = $"you updated your entry in the painting contest {competition.Name}with the information:" +
-                          $"<br/> Name:{a.Name}" +
-                          $"<br/>Description:{a.Description}" +
-                          $"<br/>IsSell:{a.IsSell}" +
-                          $"<br/>Price:{a.Price}" +
-                          $"<br/>Updated at:{a.UpdatedAt}",
-                            Name = user.Name,
-                            Url = a.Path,
-                        };
-                        _emailService.SendEmail(emailDto);
-                        transaction.Commit();
-                        return NoContent();
+                        return BadRequest("The field is requied");
                     }
 
                 }
-                catch (Exception ex)
+                else
                 {
-                    transaction.Rollback();
-                    return StatusCode(500, ex.Message);
+                    a.Name = createArt?.Name != "" ? createArt?.Name : a.Name;
+                    a.Description = createArt.Description != "" ? createArt.Description : a.Description;
+                    a.IsSell = createArt.IsSell;
+                    a.Price = createArt.Price != default(decimal) ? createArt.Price : a.Price;
+                    a.Url = createArt.Url != "" ? createArt.Url : a.Url;
+                    a.Path = createArt.Path != "" ? createArt?.Path : a?.Path;
+                    a.UpdatedAt = DateTime.Now;
+
+                    _context.SaveChanges();
+                    var emailDto = new EmailDto
+                    {
+                        To = user.Email,
+                        Subject = $"Update the test successfully {competition.Name}",
+                        Body = $"you updated your entry in the painting contest {competition.Name} with the information:" +
+                      $"<br/> Name:{a.Name}" +
+                      $"<br/>Description:{a.Description}" +
+                      $"<br/>IsSell:{a.IsSell}" +
+                      $"<br/>Price:{a.Price}" +
+                      $"<br/>Updated at:{a.UpdatedAt}",
+                        Name = user.Name,
+                        Url = a?.Path,
+                    };
+                    _emailService.SendEmail(emailDto);
+                    return NoContent();
                 }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
         [HttpPut]
         [Route("update")]
@@ -191,10 +180,7 @@ namespace Institute_of_fine_arts.Controllers
                         }
                         else
                         {
-                            if (a.Url != null)
-                            {
-                                DeleteImage(a.Url);
-                            }
+
                             a.Name = updateArt.Name ?? a.Name;
                             a.Slug = updateArt.Slug ?? a.Slug;
                             a.Description = updateArt.Description ?? a.Description;
@@ -286,23 +272,19 @@ namespace Institute_of_fine_arts.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-        private void DeleteImage(string imageUrl)
+        [HttpGet]
+        [Route("get-by-slug")]
+        [AllowAnonymous]
+        public IActionResult getBySlug(string slug)
         {
             try
             {
-                if (System.IO.File.Exists(imageUrl))
-                {
-                    System.IO.File.Delete(imageUrl);
-                    Console.WriteLine("Image deleted successfully.");
-                }
-                else
-                {
-                    Console.WriteLine("Image not found.");
-                }
+                var data = _context.Arts.FirstOrDefault(a => a.Slug == slug);
+                return Ok(data);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting image: {ex.Message}");
+                return StatusCode(500, ex.Message);
             }
         }
 
