@@ -33,7 +33,7 @@ public partial class Competition
 
     public virtual ICollection<Art> Arts { get; set; } = new List<Art>();
 
-    public virtual ICollection<Judge> Judges { get; set; } = new List<Judge>();
+    public virtual ICollection<Judge> Judges { get; set; }
 
     public virtual ICollection<Prize> Prizes { get; set; } = new List<Prize>();
 

@@ -25,17 +25,17 @@ namespace Institute_of_fine_arts.Helpers
 
             return new PaginatorInfo
             {
-                Total = totalItems,
-                Current_page = current_page,
-                Count = count,
-                Last_page = totalPages,
-                First_item = startIndex,
-                Last_Item = endIndex,
-                Per_page = pageSize,
-                First_page_url = $"{APP_URL}{url}&page=1",
-                Last_page_url = $"{APP_URL}{url}&page={totalPages}",
-                Next_page_url = totalPages > current_page ? $"{APP_URL}{url}&page={current_page + 1}" : null,
-                Prev_page_url = current_page > 1 ? $"{APP_URL}{url}&page={current_page - 1}" : null
+                total = totalItems,
+                current_page = current_page,
+                count = count,
+                last_page = totalPages,
+                first_item = startIndex,
+                last_Item = endIndex,
+                per_page = pageSize,
+                first_page_url = $"{APP_URL}{url}&page=1",
+                last_page_url = $"{APP_URL}{url}&page={totalPages}",
+                next_page_url = totalPages > current_page ? $"{APP_URL}{url}&page={current_page + 1}" : null,
+                prev_page_url = current_page > 1 ? $"{APP_URL}{url}&page={current_page - 1}" : null
             };
         }
     }

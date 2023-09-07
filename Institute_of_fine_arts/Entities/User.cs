@@ -37,7 +37,13 @@ public partial class User
 
     public virtual ICollection<Evaluate> Evaluates { get; set; } = new List<Evaluate>();
 
-    public virtual ICollection<Judge> Judges { get; set; } = new List<Judge>();
+    public virtual ICollection<Judge> JudgeTeacherId1Navigations { get; set; } = new List<Judge>();
+
+    public virtual ICollection<Judge> JudgeTeacherId2Navigations { get; set; } = new List<Judge>();
+
+    public virtual ICollection<Judge> JudgeTeacherId3Navigations { get; set; } = new List<Judge>();
+
+    public virtual ICollection<Judge> JudgeTeacherId4Navigations { get; set; } = new List<Judge>();
 
     public virtual Role? Role { get; set; }
 

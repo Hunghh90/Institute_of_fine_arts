@@ -40,7 +40,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=.\\MSSQLSERVER01;Initial Catalog=institute_of_fine_arts;Integrated Security=True;TrustServerCertificate=true");
+        => optionsBuilder.UseSqlServer(connectionString);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -319,42 +319,56 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Judge>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__judges__3213E83FB1CCF76E");
+            entity.HasKey(e => e.Id).HasName("PK__judges__3213E83FF81A0A78");
 
             entity.ToTable("judges");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CompetitionId).HasColumnName("competition_id");
             entity.Property(e => e.CreatedAt)
-                .HasColumnType("date")
+                .HasColumnType("datetime")
                 .HasColumnName("created_at");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasDefaultValueSql("('Pending')")
                 .HasColumnName("status");
-            entity.Property(e => e.TeacherId).HasColumnName("teacher_id");
+            entity.Property(e => e.TeacherId1).HasColumnName("teacher_id1");
+            entity.Property(e => e.TeacherId2).HasColumnName("teacher_id2");
+            entity.Property(e => e.TeacherId3).HasColumnName("teacher_id3");
+            entity.Property(e => e.TeacherId4).HasColumnName("teacher_id4");
             entity.Property(e => e.UpdatedAt)
-                .HasColumnType("date")
+                .HasColumnType("datetime")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UserActive).HasColumnName("user_active");
-            entity.Property(e => e.UserCreate).HasColumnName("user_create");
+            entity.Property(e => e.UserCreater).HasColumnName("user_creater");
 
             entity.HasOne(d => d.Competition).WithMany(p => p.Judges)
                 .HasForeignKey(d => d.CompetitionId)
-                .HasConstraintName("FK__judges__competit__4D94879B");
+                .HasConstraintName("FK__judges__competit__66603565");
 
-            entity.HasOne(d => d.Teacher).WithMany(p => p.Judges)
-                .HasForeignKey(d => d.TeacherId)
-                .HasConstraintName("FK__judges__teacher___4CA06362");
+            entity.HasOne(d => d.TeacherId1Navigation).WithMany(p => p.JudgeTeacherId1Navigations)
+                .HasForeignKey(d => d.TeacherId1)
+                .HasConstraintName("FK__judges__teacher___60A75C0F");
+
+            entity.HasOne(d => d.TeacherId2Navigation).WithMany(p => p.JudgeTeacherId2Navigations)
+                .HasForeignKey(d => d.TeacherId2)
+                .HasConstraintName("FK__judges__teacher___619B8048");
+
+            entity.HasOne(d => d.TeacherId3Navigation).WithMany(p => p.JudgeTeacherId3Navigations)
+                .HasForeignKey(d => d.TeacherId3)
+                .HasConstraintName("FK__judges__teacher___628FA481");
+
+            entity.HasOne(d => d.TeacherId4Navigation).WithMany(p => p.JudgeTeacherId4Navigations)
+                .HasForeignKey(d => d.TeacherId4)
+                .HasConstraintName("FK__judges__teacher___6383C8BA");
 
             entity.HasOne(d => d.UserActiveNavigation).WithMany(p => p.JudgeUserActiveNavigations)
                 .HasForeignKey(d => d.UserActive)
-                .HasConstraintName("FK__judges__user_act__4F7CD00D");
+                .HasConstraintName("FK__judges__user_act__656C112C");
 
-            entity.HasOne(d => d.UserCreateNavigation).WithMany(p => p.JudgeUserCreateNavigations)
-                .HasForeignKey(d => d.UserCreate)
-                .HasConstraintName("FK__judges__user_cre__4E88ABD4");
+            entity.HasOne(d => d.UserCreaterNavigation).WithMany(p => p.JudgeUserCreaterNavigations)
+                .HasForeignKey(d => d.UserCreater)
+                .HasConstraintName("FK__judges__user_cre__6477ECF3");
         });
 
         modelBuilder.Entity<Manager>(entity =>

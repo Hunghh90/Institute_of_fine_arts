@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Institute_of_fine_arts.Controllers
 {
@@ -61,51 +62,65 @@ namespace Institute_of_fine_arts.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Index([FromQuery] string? query)
+        public IActionResult GetCompetitions([FromQuery] getArtsDto dto)
         {
-            try
+            if (dto.Page == null) dto.Page = 1;
+            if (dto.Limit == null) dto.Limit = 30;
+            int startIndex = (dto.Page.Value - 1) * dto.Limit.Value;
+            int endIndex = dto.Page.Value * dto.Limit.Value;
+            if(dto.Search == "Status:Granded")
             {
+                var identity = HttpContext.User.Identity as ClaimsIdentity;
+                if (identity == null || !identity.IsAuthenticated) return Unauthorized();
+                var user = UserHelper.GetUserDataDto(identity);
+                if (user == null) return Unauthorized();
+                var judges = _context.Judges
+                    .Where(x => x.TeacherId1 == user.Id || x.TeacherId2 == user.Id || x.TeacherId3 == user.Id || x.TeacherId4 == user.Id)
+                    .ToList();
 
-                List<competitionDto> data;
-                if (query != null)
+
+            }
+            List<Competition> query = _context.Competitions.Include(x=>x.Prizes).Include(x => x.Judges).Include(x => x.Arts).ToList();
+
+            if (!string.IsNullOrEmpty(dto.Search))
+            {
+                string[] parseSearchParams = dto.Search.Split(';');
+                List<Dictionary<string, string>> searchText = new List<Dictionary<string, string>>();
+
+                foreach (string searchParam in parseSearchParams)
                 {
-                    data = _context.Competitions
-                       .Where(data => data.Name.Contains(query) || data.Status.Contains(query))
-                       .Select(u => new competitionDto
-                       {
-                           Name = u.Name,
-                           StartDate = u.StartDate,
-                           Slug = u.Slug,
-                           EndDate = u.EndDate,
-                           Description = u.Description,
-                           Theme = u.Theme,
-                           Status = u.Status,
-                       })
-                       .ToList();
-                }
-                else
-                {
-                    data = _context.Competitions
-                   .Select(u => new competitionDto
-                   {
-                       Name = u.Name,
-                       Slug = u.Slug,
-                       StartDate = u.StartDate,
-                       EndDate = u.EndDate,
-                       Description = u.Description,
-                       Theme = u.Theme,
-                       Image = u.Image,
-                       Status = u.Status,
-                   })
-                   .ToList();
+                    string[] keyValue = searchParam.Split(':');
+                    string key = keyValue[0];
+                    string value = keyValue[1];
+
+                    searchText.Add(new Dictionary<string, string>
+        {
+            { key, value }
+        });
                 }
 
-                return Ok(data);
+
+                query = query.Where(competition =>
+                    searchText.All(search =>
+                         competition.GetType().GetProperty(search.Keys.First())?.GetValue(competition)?.ToString() == search.Values.First()
+                    )
+                ).ToList();
             }
-            catch (Exception ex)
+            List<Competition> results = query.Skip(startIndex).Take(dto.Limit.Value).ToList();
+            string url = $"/competitions?search={dto.Search}&limit={dto.Limit}";
+
+            var result = new Dictionary<string, object>
+{
+    { "data", results }
+};
+
+            var pagination = PaginationHelper.paginate(query.Count(), dto.Page.Value, dto.Limit.Value, results.Count, url);
+            foreach (var property in pagination.GetType().GetProperties())
             {
-                return StatusCode(500, ex.Message);
+                result.Add(property.Name, property.GetValue(pagination));
             }
+
+            return Ok(result);
         }
         [HttpGet("{slug}")]
         [AllowAnonymous]
