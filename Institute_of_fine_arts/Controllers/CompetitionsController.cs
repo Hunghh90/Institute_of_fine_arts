@@ -37,7 +37,7 @@ namespace Institute_of_fine_arts.Controllers
                 {
                     return BadRequest("No image uploaded");
                 }
-                if (image.ContentType != "image/jpeg")
+                if (image.ContentType != "image/png")
                 {
                     return BadRequest("Invalid image type");
                 }
