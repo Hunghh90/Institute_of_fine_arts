@@ -28,8 +28,6 @@ public partial class InstituteOfFineArtsContext : DbContext
 
     public virtual DbSet<ExibitionArt> ExibitionArts { get; set; }
 
-    public virtual DbSet<Judge> Judges { get; set; }
-
     public virtual DbSet<Manager> Managers { get; set; }
 
     public virtual DbSet<Prize> Prizes { get; set; }
@@ -46,7 +44,7 @@ public partial class InstituteOfFineArtsContext : DbContext
     {
         modelBuilder.Entity<Art>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__arts__3213E83FBBC082C2");
+            entity.HasKey(e => e.Id).HasName("PK__arts__3213E83F25B8B5F2");
 
             entity.ToTable("arts");
 
@@ -58,9 +56,7 @@ public partial class InstituteOfFineArtsContext : DbContext
             entity.Property(e => e.Description)
                 .IsUnicode(false)
                 .HasColumnName("description");
-            entity.Property(e => e.Granded)
-                .HasDefaultValueSql("((0))")
-                .HasColumnName("granded");
+            entity.Property(e => e.Granded).HasColumnName("granded");
             entity.Property(e => e.IsExibition)
                 .HasDefaultValueSql("((0))")
                 .HasColumnName("is_exibition");
@@ -117,7 +113,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Competition>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__competit__3213E83F166C434F");
+            entity.HasKey(e => e.Id).HasName("PK__competit__3213E83F30464776");
 
             entity.ToTable("competitions");
 
@@ -149,6 +145,11 @@ public partial class InstituteOfFineArtsContext : DbContext
                 .IsUnicode(false)
                 .HasDefaultValueSql("('Pending')")
                 .HasColumnName("status");
+            entity.Property(e => e.TeacherId1).HasColumnName("teacher_id1");
+            entity.Property(e => e.TeacherId2).HasColumnName("teacher_id2");
+            entity.Property(e => e.TeacherId3).HasColumnName("teacher_id3");
+            entity.Property(e => e.TeacherId4).HasColumnName("teacher_id4");
+            entity.Property(e => e.TeacherId5).HasColumnName("teacher_id5");
             entity.Property(e => e.Theme)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -158,6 +159,26 @@ public partial class InstituteOfFineArtsContext : DbContext
                 .HasColumnName("updated_at");
             entity.Property(e => e.UserActive).HasColumnName("user_active");
             entity.Property(e => e.UserCreate).HasColumnName("user_create");
+
+            entity.HasOne(d => d.TeacherId1Navigation).WithMany(p => p.CompetitionTeacherId1Navigations)
+                .HasForeignKey(d => d.TeacherId1)
+                .HasConstraintName("FK__competiti__teach__5AEE82B9");
+
+            entity.HasOne(d => d.TeacherId2Navigation).WithMany(p => p.CompetitionTeacherId2Navigations)
+                .HasForeignKey(d => d.TeacherId2)
+                .HasConstraintName("FK__competiti__teach__5BE2A6F2");
+
+            entity.HasOne(d => d.TeacherId3Navigation).WithMany(p => p.CompetitionTeacherId3Navigations)
+                .HasForeignKey(d => d.TeacherId3)
+                .HasConstraintName("FK__competiti__teach__5CD6CB2B");
+
+            entity.HasOne(d => d.TeacherId4Navigation).WithMany(p => p.CompetitionTeacherId4Navigations)
+                .HasForeignKey(d => d.TeacherId4)
+                .HasConstraintName("FK__competiti__teach__5DCAEF64");
+
+            entity.HasOne(d => d.TeacherId5Navigation).WithMany(p => p.CompetitionTeacherId5Navigations)
+                .HasForeignKey(d => d.TeacherId5)
+                .HasConstraintName("FK__competiti__teach__5EBF139D");
 
             entity.HasOne(d => d.UserActiveNavigation).WithMany(p => p.CompetitionUserActiveNavigations)
                 .HasForeignKey(d => d.UserActive)
@@ -170,7 +191,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__customer__3213E83F287E705E");
+            entity.HasKey(e => e.Id).HasName("PK__customer__3213E83FA5730DFF");
 
             entity.ToTable("customers");
 
@@ -191,7 +212,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Evaluate>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__evaluate__3213E83F182ED0A5");
+            entity.HasKey(e => e.Id).HasName("PK__evaluate__3213E83FF6253AB2");
 
             entity.ToTable("evaluates");
 
@@ -228,7 +249,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Exibition>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83F05D8DC11");
+            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83F83099CAA");
 
             entity.ToTable("exibitions");
 
@@ -279,7 +300,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<ExibitionArt>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83FB51C643C");
+            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83F07202F34");
 
             entity.ToTable("exibition_arts");
 
@@ -317,63 +338,9 @@ public partial class InstituteOfFineArtsContext : DbContext
                 .HasConstraintName("FK__exibition__user___48CFD27E");
         });
 
-        modelBuilder.Entity<Judge>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__judges__3213E83FF81A0A78");
-
-            entity.ToTable("judges");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CompetitionId).HasColumnName("competition_id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("status");
-            entity.Property(e => e.TeacherId1).HasColumnName("teacher_id1");
-            entity.Property(e => e.TeacherId2).HasColumnName("teacher_id2");
-            entity.Property(e => e.TeacherId3).HasColumnName("teacher_id3");
-            entity.Property(e => e.TeacherId4).HasColumnName("teacher_id4");
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("updated_at");
-            entity.Property(e => e.UserActive).HasColumnName("user_active");
-            entity.Property(e => e.UserCreater).HasColumnName("user_creater");
-
-            entity.HasOne(d => d.Competition).WithMany(p => p.Judges)
-                .HasForeignKey(d => d.CompetitionId)
-                .HasConstraintName("FK__judges__competit__66603565");
-
-            entity.HasOne(d => d.TeacherId1Navigation).WithMany(p => p.JudgeTeacherId1Navigations)
-                .HasForeignKey(d => d.TeacherId1)
-                .HasConstraintName("FK__judges__teacher___60A75C0F");
-
-            entity.HasOne(d => d.TeacherId2Navigation).WithMany(p => p.JudgeTeacherId2Navigations)
-                .HasForeignKey(d => d.TeacherId2)
-                .HasConstraintName("FK__judges__teacher___619B8048");
-
-            entity.HasOne(d => d.TeacherId3Navigation).WithMany(p => p.JudgeTeacherId3Navigations)
-                .HasForeignKey(d => d.TeacherId3)
-                .HasConstraintName("FK__judges__teacher___628FA481");
-
-            entity.HasOne(d => d.TeacherId4Navigation).WithMany(p => p.JudgeTeacherId4Navigations)
-                .HasForeignKey(d => d.TeacherId4)
-                .HasConstraintName("FK__judges__teacher___6383C8BA");
-
-            entity.HasOne(d => d.UserActiveNavigation).WithMany(p => p.JudgeUserActiveNavigations)
-                .HasForeignKey(d => d.UserActive)
-                .HasConstraintName("FK__judges__user_act__656C112C");
-
-            entity.HasOne(d => d.UserCreaterNavigation).WithMany(p => p.JudgeUserCreaterNavigations)
-                .HasForeignKey(d => d.UserCreater)
-                .HasConstraintName("FK__judges__user_cre__6477ECF3");
-        });
-
         modelBuilder.Entity<Manager>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__managers__3213E83FEAB4C26C");
+            entity.HasKey(e => e.Id).HasName("PK__managers__3213E83F2713AF1E");
 
             entity.ToTable("managers");
 
@@ -426,7 +393,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Prize>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__prizes__3213E83F76BEE8E8");
+            entity.HasKey(e => e.Id).HasName("PK__prizes__3213E83F345586B5");
 
             entity.ToTable("prizes");
 
@@ -473,7 +440,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__roles__3213E83F80FE48EE");
+            entity.HasKey(e => e.Id).HasName("PK__roles__3213E83FFA81B336");
 
             entity.ToTable("roles");
 
@@ -492,7 +459,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__users__3213E83FF3843C5F");
+            entity.HasKey(e => e.Id).HasName("PK__users__3213E83FABF740FF");
 
             entity.ToTable("users");
 

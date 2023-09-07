@@ -31,9 +31,6 @@ namespace Institute_of_fine_arts.Controllers
                 if (identity == null || !identity.IsAuthenticated) return Unauthorized();
                 var user = UserHelper.GetUserDataDto(identity);
                 if (user == null) return Unauthorized();
-                var judges = _context.Judges.FirstOrDefault(j =>
-                j.CompetitionId == createEvaluates.CompetitionId &&
-                j.TeacherId1 == user.Id || j.TeacherId2 == user.Id || j.TeacherId3 == user.Id || j.TeacherId4 == user.Id);
                 if (judges == null) return Unauthorized();
                 var art = _context.Arts.FirstOrDefault(x => x.Slug == createEvaluates.ArtSlug);
                 if (art == null) return BadRequest("Art not found");

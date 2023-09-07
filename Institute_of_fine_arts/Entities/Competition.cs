@@ -31,11 +31,29 @@ public partial class Competition
 
     public string? Image { get; set; }
 
+    public int? TeacherId1 { get; set; }
+
+    public int? TeacherId2 { get; set; }
+
+    public int? TeacherId3 { get; set; }
+
+    public int? TeacherId4 { get; set; }
+
+    public int? TeacherId5 { get; set; }
+
     public virtual ICollection<Art> Arts { get; set; } = new List<Art>();
 
-    public virtual ICollection<Judge> Judges { get; set; }
-
     public virtual ICollection<Prize> Prizes { get; set; } = new List<Prize>();
+
+    public virtual User? TeacherId1Navigation { get; set; }
+
+    public virtual User? TeacherId2Navigation { get; set; }
+
+    public virtual User? TeacherId3Navigation { get; set; }
+
+    public virtual User? TeacherId4Navigation { get; set; }
+
+    public virtual User? TeacherId5Navigation { get; set; }
 
     public virtual Manager? UserActiveNavigation { get; set; }
 
