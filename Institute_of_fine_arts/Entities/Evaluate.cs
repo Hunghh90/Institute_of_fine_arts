@@ -9,19 +9,19 @@ public partial class Evaluate
 
     public string? Feedback { get; set; }
 
-    public int Layout { get; set; }
+    public int? Layout { get; set; }
 
-    public int Color { get; set; }
+    public int? Color { get; set; }
 
-    public int Content { get; set; }
+    public int? Content { get; set; }
 
-    public int Creative { get; set; }
+    public int? Creative { get; set; }
 
-    public int Total { get; set; }
+    public decimal? Total { get; set; }
 
     public string? Status { get; set; }
 
-    public int? ArtsId { get; set; }
+    public int? ArtId { get; set; }
 
     public int? TeacherId { get; set; }
 
@@ -29,7 +29,7 @@ public partial class Evaluate
 
     public DateTime? UpdatedAt { get; set; }
 
-    public virtual Art? Arts { get; set; }
+    public virtual Art? Art { get; set; }
 
     public virtual User? Teacher { get; set; }
 }

@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace Institute_of_fine_arts.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/judges")]
     [ApiController]
     public class JudgesController : ControllerBase
     {
@@ -19,7 +19,7 @@ namespace Institute_of_fine_arts.Controllers
 
         [HttpGet]
         [Route("teacher")]
-        public IActionResult Index()
+        public IActionResult Index(string slug)
         {
             try
             {
@@ -27,12 +27,11 @@ namespace Institute_of_fine_arts.Controllers
                 if (identity == null || !identity.IsAuthenticated) return Unauthorized();
                 var user = UserHelper.GetUserDataDto(identity);
                 if (user == null) return Unauthorized();
+                var competition = _context.Competitions.FirstOrDefault(c => c.Slug == slug);
+                if (competition == null) return BadRequest();
                 var data = _context.Judges
-                    .Include(j => j.TeacherId1Navigation)
-                    .Include(j => j.TeacherId2Navigation)
-                    .Include(j => j.TeacherId3Navigation)
-                    .Include(j => j.TeacherId4Navigation)
-                    .Where(j => j.CompetitionId == user.Id)
+                    .Include(j => j.Teacher)
+                    .Where(j => j.CompetitionId == competition.Id)
                     .ToList();
                 return Ok(data);
             }

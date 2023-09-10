@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using Microsoft.EntityFrameworkCore;
 
 namespace Institute_of_fine_arts.Entities;
@@ -92,6 +93,9 @@ public partial class InstituteOfFineArtsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("status");
+            entity.Property(e => e.TotalScore)
+                .HasColumnType("decimal(4, 2)")
+                .HasColumnName("total_score");
             entity.Property(e => e.UpdatedAt)
                 .HasColumnType("date")
                 .HasColumnName("updated_at");
@@ -122,6 +126,9 @@ public partial class InstituteOfFineArtsContext : DbContext
             entity.ToTable("competitions");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Awards)
+                .HasDefaultValueSql("((0))")
+                .HasColumnName("awards");
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("date")
                 .HasColumnName("created_at");
@@ -191,16 +198,16 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Evaluate>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__evaluate__3213E83F182ED0A5");
+            entity.HasKey(e => e.Id).HasName("PK__evaluate__3213E83F9B44A0EB");
 
             entity.ToTable("evaluates");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.ArtsId).HasColumnName("arts_id");
+            entity.Property(e => e.ArtId).HasColumnName("art_id");
             entity.Property(e => e.Color).HasColumnName("color");
             entity.Property(e => e.Content).HasColumnName("content");
             entity.Property(e => e.CreatedAt)
-                .HasColumnType("date")
+                .HasColumnType("datetime")
                 .HasColumnName("created_at");
             entity.Property(e => e.Creative).HasColumnName("creative");
             entity.Property(e => e.Feedback)
@@ -208,22 +215,24 @@ public partial class InstituteOfFineArtsContext : DbContext
                 .HasColumnName("feedback");
             entity.Property(e => e.Layout).HasColumnName("layout");
             entity.Property(e => e.Status)
-                .HasMaxLength(50)
+                .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("status");
             entity.Property(e => e.TeacherId).HasColumnName("teacher_id");
-            entity.Property(e => e.Total).HasColumnName("total");
+            entity.Property(e => e.Total)
+                .HasColumnType("decimal(4, 2)")
+                .HasColumnName("total");
             entity.Property(e => e.UpdatedAt)
-                .HasColumnType("date")
+                .HasColumnType("datetime")
                 .HasColumnName("updated_at");
 
-            entity.HasOne(d => d.Arts).WithMany(p => p.Evaluates)
-                .HasForeignKey(d => d.ArtsId)
-                .HasConstraintName("FK__evaluates__arts___44FF419A");
+            entity.HasOne(d => d.Art).WithMany(p => p.Evaluates)
+                .HasForeignKey(d => d.ArtId)
+                .HasConstraintName("FK__evaluates__art_i__787EE5A0");
 
             entity.HasOne(d => d.Teacher).WithMany(p => p.Evaluates)
                 .HasForeignKey(d => d.TeacherId)
-                .HasConstraintName("FK__evaluates__teach__45F365D3");
+                .HasConstraintName("FK__evaluates__teach__797309D9");
         });
 
         modelBuilder.Entity<Exibition>(entity =>
@@ -319,7 +328,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Judge>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__judges__3213E83FF81A0A78");
+            entity.HasKey(e => e.Id).HasName("PK__judges__3213E83FC9E2D740");
 
             entity.ToTable("judges");
 
@@ -330,45 +339,29 @@ public partial class InstituteOfFineArtsContext : DbContext
                 .HasColumnName("created_at");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("status");
-            entity.Property(e => e.TeacherId1).HasColumnName("teacher_id1");
-            entity.Property(e => e.TeacherId2).HasColumnName("teacher_id2");
-            entity.Property(e => e.TeacherId3).HasColumnName("teacher_id3");
-            entity.Property(e => e.TeacherId4).HasColumnName("teacher_id4");
+                .IsUnicode(false);
+            entity.Property(e => e.TeacherId).HasColumnName("teacher_id");
             entity.Property(e => e.UpdatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UserActive).HasColumnName("user_active");
-            entity.Property(e => e.UserCreater).HasColumnName("user_creater");
+            entity.Property(e => e.UserCreate).HasColumnName("user_create");
 
             entity.HasOne(d => d.Competition).WithMany(p => p.Judges)
                 .HasForeignKey(d => d.CompetitionId)
-                .HasConstraintName("FK__judges__competit__66603565");
+                .HasConstraintName("FK__judges__competit__6EF57B66");
 
-            entity.HasOne(d => d.TeacherId1Navigation).WithMany(p => p.JudgeTeacherId1Navigations)
-                .HasForeignKey(d => d.TeacherId1)
-                .HasConstraintName("FK__judges__teacher___60A75C0F");
-
-            entity.HasOne(d => d.TeacherId2Navigation).WithMany(p => p.JudgeTeacherId2Navigations)
-                .HasForeignKey(d => d.TeacherId2)
-                .HasConstraintName("FK__judges__teacher___619B8048");
-
-            entity.HasOne(d => d.TeacherId3Navigation).WithMany(p => p.JudgeTeacherId3Navigations)
-                .HasForeignKey(d => d.TeacherId3)
-                .HasConstraintName("FK__judges__teacher___628FA481");
-
-            entity.HasOne(d => d.TeacherId4Navigation).WithMany(p => p.JudgeTeacherId4Navigations)
-                .HasForeignKey(d => d.TeacherId4)
-                .HasConstraintName("FK__judges__teacher___6383C8BA");
+            entity.HasOne(d => d.Teacher).WithMany(p => p.Judges)
+                .HasForeignKey(d => d.TeacherId)
+                .HasConstraintName("FK__judges__teacher___6FE99F9F");
 
             entity.HasOne(d => d.UserActiveNavigation).WithMany(p => p.JudgeUserActiveNavigations)
                 .HasForeignKey(d => d.UserActive)
-                .HasConstraintName("FK__judges__user_act__656C112C");
+                .HasConstraintName("FK__judges__user_act__71D1E811");
 
-            entity.HasOne(d => d.UserCreaterNavigation).WithMany(p => p.JudgeUserCreaterNavigations)
-                .HasForeignKey(d => d.UserCreater)
-                .HasConstraintName("FK__judges__user_cre__6477ECF3");
+            entity.HasOne(d => d.UserCreateNavigation).WithMany(p => p.JudgeUserCreateNavigations)
+                .HasForeignKey(d => d.UserCreate)
+                .HasConstraintName("FK__judges__user_cre__70DDC3D8");
         });
 
         modelBuilder.Entity<Manager>(entity =>

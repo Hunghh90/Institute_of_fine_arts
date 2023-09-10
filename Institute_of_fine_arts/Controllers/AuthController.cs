@@ -96,7 +96,8 @@ namespace Institute_of_fine_arts.Controllers
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
                 if (identity == null || !identity.IsAuthenticated) return Unauthorized();
                 var user = UserHelper.GetUserDataDto(identity);
-                    return Ok(user);
+                var u = _context.Users.FirstOrDefault(x=>x.Id == user.Id);
+                    return Ok(u);
             }catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);

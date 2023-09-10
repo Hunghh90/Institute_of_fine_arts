@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Institute_of_fine_arts.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 namespace Institute_of_fine_arts.Controllers
 {
@@ -209,14 +210,14 @@ namespace Institute_of_fine_arts.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public ArtPaginator GetArts([FromQuery] getArtsDto dto)
+        public IActionResult GetArts([FromQuery] getArtsDto dto)
         {
             if (dto.Page == null) dto.Page = 1;
             if (dto.Limit == null) dto.Limit = 30;
             int startIndex = (dto.Page.Value - 1) * dto.Limit.Value;
             int endIndex = dto.Page.Value * dto.Limit.Value;
 
-            List<Art> query = _context.Arts.ToList();
+            List<Art> query = _context.Arts.Include(x => x.Evaluates).ToList();
 
             if (!string.IsNullOrEmpty(dto.Search))
             {
@@ -248,13 +249,19 @@ namespace Institute_of_fine_arts.Controllers
                 ).ToList();
             }
             List<Art> results = query.Skip(startIndex).Take(dto.Limit.Value).ToList();
-            string url = $"/products?search={dto.Search}&limit={dto.Limit}";
+            string url = $"/art?search={dto.Search}&limit={dto.Limit}";
 
-            return new ArtPaginator
+            var result = new Dictionary<string, object>
+{
+    { "data", results }
+};
+
+            var pagination = PaginationHelper.paginate(query.Count(), dto.Page.Value, dto.Limit.Value, results.Count, url);
+            foreach (var property in pagination.GetType().GetProperties())
             {
-                Data = results.ToArray(),
-                PaginatorInfo = PaginationHelper.paginate(query.Count(), dto.Page.Value, dto.Limit.Value, results.Count, url)
-            };
+                result.Add(property.Name, property.GetValue(pagination));
+            }
+            return Ok(result);
         }
 
         [HttpGet]

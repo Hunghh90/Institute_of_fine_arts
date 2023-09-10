@@ -45,7 +45,7 @@ public partial class Manager
 
     public virtual ICollection<Judge> JudgeUserActiveNavigations { get; set; } = new List<Judge>();
 
-    public virtual ICollection<Judge> JudgeUserCreaterNavigations { get; set; } = new List<Judge>();
+    public virtual ICollection<Judge> JudgeUserCreateNavigations { get; set; } = new List<Judge>();
 
     public virtual ICollection<Prize> PrizeUserActiveNavigations { get; set; } = new List<Prize>();
 

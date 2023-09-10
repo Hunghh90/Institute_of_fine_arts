@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Institute_of_fine_arts.Controllers
 {
@@ -21,10 +22,7 @@ namespace Institute_of_fine_arts.Controllers
             _context = context;
 
         }
-        //public void StartTimer()
-        //{
-        //    _timer = new Timer(UpdateStatus, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-        //}
+
 
         [HttpPost]
         [Route("upload")]
@@ -68,59 +66,83 @@ namespace Institute_of_fine_arts.Controllers
             if (dto.Limit == null) dto.Limit = 30;
             int startIndex = (dto.Page.Value - 1) * dto.Limit.Value;
             int endIndex = dto.Page.Value * dto.Limit.Value;
-            if(dto.Search == "Status:Granded")
+            if (dto.Search == "Status:Granded")
             {
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
-                if (identity == null || !identity.IsAuthenticated) return Unauthorized();
+                if (identity == null || !identity.IsAuthenticated) return BadRequest();
                 var user = UserHelper.GetUserDataDto(identity);
-                if (user == null) return Unauthorized();
+                if (user == null) return BadRequest();
                 var judges = _context.Judges
-                    .Where(x => x.TeacherId1 == user.Id || x.TeacherId2 == user.Id || x.TeacherId3 == user.Id || x.TeacherId4 == user.Id)
+                    .Where(x => x.TeacherId == user.Id && x.Status == "Active")
                     .ToList();
+                if (judges.Count < 1) return BadRequest("Not Judges");
+                List<Competition> filteredCompetitions = _context.Competitions
+                    .ToList()
+                    .Where(c => judges.Any(j => j.CompetitionId == c.Id) && c.Status == "Granded")
+                    .Skip(startIndex)
+                    .Take(dto.Limit.Value)
+                    .ToList();
+                string urls = $"/competitions?search={dto.Search}&limit={dto.Limit}";
 
-
-            }
-            List<Competition> query = _context.Competitions.Include(x=>x.Prizes).Include(x => x.Judges).Include(x => x.Arts).ToList();
-
-            if (!string.IsNullOrEmpty(dto.Search))
-            {
-                string[] parseSearchParams = dto.Search.Split(';');
-                List<Dictionary<string, string>> searchText = new List<Dictionary<string, string>>();
-
-                foreach (string searchParam in parseSearchParams)
+                var data = new Dictionary<string, object>
                 {
-                    string[] keyValue = searchParam.Split(':');
-                    string key = keyValue[0];
-                    string value = keyValue[1];
+                    { "data", filteredCompetitions }
+                };
+                var paginations = PaginationHelper.paginate(data.Count(), dto.Page.Value, dto.Limit.Value, filteredCompetitions.Count, urls);
+                foreach (var property in paginations.GetType().GetProperties())
+                {
+                    data.Add(property.Name, property.GetValue(paginations));
+                }
+                UpdateStatus();
+                Awards();
+                return Ok(data);
+            }
+            else
+            {
+                List<Competition> query = _context.Competitions.Include(x => x.Prizes).Include(x => x.Judges).Include(x => x.Arts).ToList();
 
-                    searchText.Add(new Dictionary<string, string>
+                if (!string.IsNullOrEmpty(dto.Search))
+                {
+                    string[] parseSearchParams = dto.Search.Split(';');
+                    List<Dictionary<string, string>> searchText = new List<Dictionary<string, string>>();
+
+                    foreach (string searchParam in parseSearchParams)
+                    {
+                        string[] keyValue = searchParam.Split(':');
+                        string key = keyValue[0];
+                        string value = keyValue[1];
+
+                        searchText.Add(new Dictionary<string, string>
         {
             { key, value }
         });
+                    }
+
+
+                    query = query.Where(competition =>
+                        searchText.All(search =>
+                             competition.GetType().GetProperty(search.Keys.First())?.GetValue(competition)?.ToString() == search.Values.First()
+                        )
+                    ).ToList();
                 }
+                List<Competition> results = query.Skip(startIndex).Take(dto.Limit.Value).ToList();
+                string url = $"/competitions?search={dto.Search}&limit={dto.Limit}";
 
-
-                query = query.Where(competition =>
-                    searchText.All(search =>
-                         competition.GetType().GetProperty(search.Keys.First())?.GetValue(competition)?.ToString() == search.Values.First()
-                    )
-                ).ToList();
-            }
-            List<Competition> results = query.Skip(startIndex).Take(dto.Limit.Value).ToList();
-            string url = $"/competitions?search={dto.Search}&limit={dto.Limit}";
-
-            var result = new Dictionary<string, object>
+                var result = new Dictionary<string, object>
 {
     { "data", results }
 };
 
-            var pagination = PaginationHelper.paginate(query.Count(), dto.Page.Value, dto.Limit.Value, results.Count, url);
-            foreach (var property in pagination.GetType().GetProperties())
-            {
-                result.Add(property.Name, property.GetValue(pagination));
+                var pagination = PaginationHelper.paginate(query.Count(), dto.Page.Value, dto.Limit.Value, results.Count, url);
+                foreach (var property in pagination.GetType().GetProperties())
+                {
+                    result.Add(property.Name, property.GetValue(pagination));
+                }
+                UpdateStatus();
+                Awards();
+                return Ok(result);
             }
 
-            return Ok(result);
         }
         [HttpGet("{slug}")]
         [AllowAnonymous]
@@ -159,6 +181,7 @@ namespace Institute_of_fine_arts.Controllers
             try
             {
                 var data = _context.Competitions.OrderByDescending(c => c.Prizes.Sum(p => p.Price * p.Quantity)).ToList();
+                Awards();
                 return Ok(data);
             }
             catch (Exception ex)
@@ -250,12 +273,12 @@ namespace Institute_of_fine_arts.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-        private void UpdateStatus(object state)
+        private void UpdateStatus()
         {
             try
             {
                 DateTime currentTime = DateTime.Now;
-                var competitions = _context.Competitions.Where(x => x.EndDate >= currentTime).ToList();
+                var competitions = _context.Competitions.Where(x => x.EndDate.AddDays(8) >= currentTime).ToList();
 
                 foreach (var competition in competitions)
                 {
@@ -263,17 +286,21 @@ namespace Institute_of_fine_arts.Controllers
 
                     if (currentTime < competition.StartDate)
                     {
-
-                        competition.Status = "Coming";
+                        competition.Status = "Upcoming";
                     }
                     else if (currentTime >= competition.StartDate && currentTime <= competition.EndDate)
                     {
                         competition.Status = "Process";
                     }
-                    else if (currentTime > competition.EndDate)
+                    else if (currentTime > competition.EndDate && currentTime < competition.EndDate.AddDays(7))
+                    {
+                        competition.Status = "Granded";
+                    }
+                    else if (currentTime > competition.EndDate.AddDays(7))
                     {
                         competition.Status = "Finished";
                     }
+
                 }
 
                 _context.SaveChanges();
@@ -281,6 +308,31 @@ namespace Institute_of_fine_arts.Controllers
             catch (Exception ex)
             {
                 StatusCode(500, ex.Message);
+            }
+        }
+
+        private void Awards()
+        {
+            try
+            {
+                var competitions = _context.Competitions.Include(a => a.Arts).Where(c => c.Status == "Finished" && c.Awards == 0).ToList();
+                foreach (var competition in competitions)
+                {
+                    if (competition.Arts != null)
+                    {
+                        foreach (var art in competition.Arts)
+                        {
+                            var evaluate = _context.Evaluates.Where(x => x.ArtId == art.Id).ToList();
+                            decimal TotalScore = (decimal)(evaluate.Sum(score => score.Total) / evaluate.Count).Value;
+                            art.TotalScore = TotalScore;
+                            _context.SaveChanges();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
     }

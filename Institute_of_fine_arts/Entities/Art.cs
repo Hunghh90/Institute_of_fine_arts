@@ -39,11 +39,13 @@ public partial class Art
 
     public byte? Granded { get; set; }
 
+    public decimal? TotalScore { get; set; }
+
     public virtual Competition Competition { get; set; } = null!;
 
-    public virtual ICollection<Evaluate> Evaluates { get; set; } = new List<Evaluate>();
+    public virtual ICollection<Evaluate>? Evaluates { get; set; }
 
-    public virtual ICollection<ExibitionArt> ExibitionArts { get; set; } = new List<ExibitionArt>();
+    public virtual ICollection<ExibitionArt>? ExibitionArts { get; set; }
 
     public virtual User Owner { get; set; } = null!;
 
