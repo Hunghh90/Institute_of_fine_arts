@@ -44,11 +44,9 @@ public partial class InstituteOfFineArtsContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AS");
-
         modelBuilder.Entity<Art>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__arts__3213E83F29D25EB6");
+            entity.HasKey(e => e.Id).HasName("PK__arts__3213E83F7B72C0D4");
 
             entity.ToTable("arts");
 
@@ -122,7 +120,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Competition>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__competit__3213E83FF005EC50");
+            entity.HasKey(e => e.Id).HasName("PK__competit__3213E83F06342B05");
 
             entity.ToTable("competitions");
 
@@ -178,7 +176,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__customer__3213E83F4F1D46F7");
+            entity.HasKey(e => e.Id).HasName("PK__customer__3213E83F94D73056");
 
             entity.ToTable("customers");
 
@@ -199,7 +197,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Evaluate>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__evaluate__3213E83FB8C0AF9A");
+            entity.HasKey(e => e.Id).HasName("PK__evaluate__3213E83F64FBF9EA");
 
             entity.ToTable("evaluates");
 
@@ -238,7 +236,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Exibition>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83FE90FF587");
+            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83FE30EEA9C");
 
             entity.ToTable("exibitions");
 
@@ -289,7 +287,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<ExibitionArt>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83FEF2E20D8");
+            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83FC03F60E8");
 
             entity.ToTable("exibition_arts");
 
@@ -329,7 +327,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Judge>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__judges__3213E83F5AB20E05");
+            entity.HasKey(e => e.Id).HasName("PK__judges__3213E83F7ADA936D");
 
             entity.ToTable("judges");
 
@@ -367,7 +365,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Manager>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__managers__3213E83F74F74D00");
+            entity.HasKey(e => e.Id).HasName("PK__managers__3213E83F73E37A98");
 
             entity.ToTable("managers");
 
@@ -420,7 +418,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Prize>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__prizes__3213E83F260BD9C7");
+            entity.HasKey(e => e.Id).HasName("PK__prizes__3213E83FF7D29876");
 
             entity.ToTable("prizes");
 
@@ -467,7 +465,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__roles__3213E83FE5171DEA");
+            entity.HasKey(e => e.Id).HasName("PK__roles__3213E83FBFF978E3");
 
             entity.ToTable("roles");
 
@@ -486,7 +484,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__users__3213E83F6161536E");
+            entity.HasKey(e => e.Id).HasName("PK__users__3213E83F8FDA9B0F");
 
             entity.ToTable("users");
 
