@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Institute_of_fine_arts.Controllers
 {
@@ -304,7 +305,7 @@ namespace Institute_of_fine_arts.Controllers
                                     _context.SaveChanges();
                                 }
                             }
-                            competition.Status = "Awards";
+                            competition.Status = "Award";
                             _context.SaveChanges();
                         }
                     }
@@ -314,6 +315,29 @@ namespace Institute_of_fine_arts.Controllers
             catch (Exception ex)
             {
                 StatusCode(500, ex.Message);
+            }
+        }
+
+        public void Adwards()
+        {
+            try
+            {
+                var competitions = _context.Competitions.Include(x => x.Arts).Where(x => x.Status == "Award").ToList();
+                
+                if(competitions.Count > 0)
+                {
+                    foreach(var competition in competitions)
+                    {
+                        var prizes = _context.Prizes.Where(x => x.ConpetitionId == competition.Id).ToList();
+                        if (competition.Arts != null)
+                        {
+
+                        }
+                    }    
+                }
+            }catch (Exception e)
+            {
+                StatusCode(500, e.ToString());
             }
         }
 
