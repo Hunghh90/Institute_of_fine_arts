@@ -33,11 +33,11 @@ public partial class Competition
 
     public byte? Awards { get; set; }
 
-    public virtual ICollection<Art> Arts { get; set; }
+    public virtual ICollection<Art> Arts { get; set; } = new List<Art>();
 
-    public virtual ICollection<Judge> Judges { get; set; }
+    public virtual ICollection<Judge> Judges { get; set; } = new List<Judge>();
 
-    public virtual ICollection<Prize> Prizes { get; set; }
+    public virtual ICollection<Prize> Prizes { get; set; } = new List<Prize>();
 
     public virtual Manager? UserActiveNavigation { get; set; }
 

@@ -23,10 +23,7 @@ namespace Institute_of_fine_arts.Controllers
         {
             try
             {
-                var identity = HttpContext.User.Identity as ClaimsIdentity;
-                if (identity == null || !identity.IsAuthenticated) return Unauthorized();
-                var user = UserHelper.GetUserDataDto(identity);
-                if (user == null) return Unauthorized();
+              
                 var competition = _context.Competitions.FirstOrDefault(c => c.Slug == slug);
                 if (competition == null) return BadRequest();
                 var data = _context.Judges

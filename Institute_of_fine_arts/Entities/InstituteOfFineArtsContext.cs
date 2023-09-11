@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.NetworkInformation;
 using Microsoft.EntityFrameworkCore;
 
 namespace Institute_of_fine_arts.Entities;
@@ -45,9 +44,11 @@ public partial class InstituteOfFineArtsContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
         modelBuilder.Entity<Art>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__arts__3213E83FBBC082C2");
+            entity.HasKey(e => e.Id).HasName("PK__arts__3213E83F29D25EB6");
 
             entity.ToTable("arts");
 
@@ -107,21 +108,21 @@ public partial class InstituteOfFineArtsContext : DbContext
             entity.HasOne(d => d.Competition).WithMany(p => p.Arts)
                 .HasForeignKey(d => d.CompetitionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__arts__competitio__412EB0B6");
+                .HasConstraintName("FK__arts__competitio__5535A963");
 
             entity.HasOne(d => d.Owner).WithMany(p => p.Arts)
                 .HasForeignKey(d => d.OwnerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__arts__owner_id__403A8C7D");
+                .HasConstraintName("FK__arts__owner_id__5441852A");
 
             entity.HasOne(d => d.Prize).WithMany(p => p.Arts)
                 .HasForeignKey(d => d.PrizeId)
-                .HasConstraintName("FK__arts__prize_id__4222D4EF");
+                .HasConstraintName("FK__arts__prize_id__5629CD9C");
         });
 
         modelBuilder.Entity<Competition>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__competit__3213E83F166C434F");
+            entity.HasKey(e => e.Id).HasName("PK__competit__3213E83FF005EC50");
 
             entity.ToTable("competitions");
 
@@ -168,16 +169,16 @@ public partial class InstituteOfFineArtsContext : DbContext
 
             entity.HasOne(d => d.UserActiveNavigation).WithMany(p => p.CompetitionUserActiveNavigations)
                 .HasForeignKey(d => d.UserActive)
-                .HasConstraintName("FK__competiti__user___440B1D61");
+                .HasConstraintName("FK__competiti__user___5812160E");
 
             entity.HasOne(d => d.UserCreateNavigation).WithMany(p => p.CompetitionUserCreateNavigations)
                 .HasForeignKey(d => d.UserCreate)
-                .HasConstraintName("FK__competiti__user___4316F928");
+                .HasConstraintName("FK__competiti__user___571DF1D5");
         });
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__customer__3213E83F287E705E");
+            entity.HasKey(e => e.Id).HasName("PK__customer__3213E83F4F1D46F7");
 
             entity.ToTable("customers");
 
@@ -198,7 +199,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<Evaluate>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__evaluate__3213E83F9B44A0EB");
+            entity.HasKey(e => e.Id).HasName("PK__evaluate__3213E83FB8C0AF9A");
 
             entity.ToTable("evaluates");
 
@@ -228,16 +229,16 @@ public partial class InstituteOfFineArtsContext : DbContext
 
             entity.HasOne(d => d.Art).WithMany(p => p.Evaluates)
                 .HasForeignKey(d => d.ArtId)
-                .HasConstraintName("FK__evaluates__art_i__787EE5A0");
+                .HasConstraintName("FK__evaluates__art_i__59063A47");
 
             entity.HasOne(d => d.Teacher).WithMany(p => p.Evaluates)
                 .HasForeignKey(d => d.TeacherId)
-                .HasConstraintName("FK__evaluates__teach__797309D9");
+                .HasConstraintName("FK__evaluates__teach__59FA5E80");
         });
 
         modelBuilder.Entity<Exibition>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83F05D8DC11");
+            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83FE90FF587");
 
             entity.ToTable("exibitions");
 
@@ -279,16 +280,16 @@ public partial class InstituteOfFineArtsContext : DbContext
 
             entity.HasOne(d => d.UserActiveNavigation).WithMany(p => p.ExibitionUserActiveNavigations)
                 .HasForeignKey(d => d.UserActive)
-                .HasConstraintName("FK__exibition__user___4BAC3F29");
+                .HasConstraintName("FK__exibition__user___5FB337D6");
 
             entity.HasOne(d => d.UserCreateNavigation).WithMany(p => p.ExibitionUserCreateNavigations)
                 .HasForeignKey(d => d.UserCreate)
-                .HasConstraintName("FK__exibition__user___4AB81AF0");
+                .HasConstraintName("FK__exibition__user___5EBF139D");
         });
 
         modelBuilder.Entity<ExibitionArt>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83FB51C643C");
+            entity.HasKey(e => e.Id).HasName("PK__exibitio__3213E83FEF2E20D8");
 
             entity.ToTable("exibition_arts");
 
@@ -311,24 +312,24 @@ public partial class InstituteOfFineArtsContext : DbContext
 
             entity.HasOne(d => d.Art).WithMany(p => p.ExibitionArts)
                 .HasForeignKey(d => d.ArtId)
-                .HasConstraintName("FK__exibition__art_i__47DBAE45");
+                .HasConstraintName("FK__exibition__art_i__5BE2A6F2");
 
             entity.HasOne(d => d.Exibition).WithMany(p => p.ExibitionArts)
                 .HasForeignKey(d => d.ExibitionId)
-                .HasConstraintName("FK__exibition__exibi__46E78A0C");
+                .HasConstraintName("FK__exibition__exibi__5AEE82B9");
 
             entity.HasOne(d => d.UserActiveNavigation).WithMany(p => p.ExibitionArtUserActiveNavigations)
                 .HasForeignKey(d => d.UserActive)
-                .HasConstraintName("FK__exibition__user___49C3F6B7");
+                .HasConstraintName("FK__exibition__user___5DCAEF64");
 
             entity.HasOne(d => d.UserCreateNavigation).WithMany(p => p.ExibitionArtUserCreateNavigations)
                 .HasForeignKey(d => d.UserCreate)
-                .HasConstraintName("FK__exibition__user___48CFD27E");
+                .HasConstraintName("FK__exibition__user___5CD6CB2B");
         });
 
         modelBuilder.Entity<Judge>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__judges__3213E83FC9E2D740");
+            entity.HasKey(e => e.Id).HasName("PK__judges__3213E83F5AB20E05");
 
             entity.ToTable("judges");
 
@@ -349,24 +350,24 @@ public partial class InstituteOfFineArtsContext : DbContext
 
             entity.HasOne(d => d.Competition).WithMany(p => p.Judges)
                 .HasForeignKey(d => d.CompetitionId)
-                .HasConstraintName("FK__judges__competit__6EF57B66");
+                .HasConstraintName("FK__judges__competit__60A75C0F");
 
             entity.HasOne(d => d.Teacher).WithMany(p => p.Judges)
                 .HasForeignKey(d => d.TeacherId)
-                .HasConstraintName("FK__judges__teacher___6FE99F9F");
+                .HasConstraintName("FK__judges__teacher___619B8048");
 
             entity.HasOne(d => d.UserActiveNavigation).WithMany(p => p.JudgeUserActiveNavigations)
                 .HasForeignKey(d => d.UserActive)
-                .HasConstraintName("FK__judges__user_act__71D1E811");
+                .HasConstraintName("FK__judges__user_act__6383C8BA");
 
             entity.HasOne(d => d.UserCreateNavigation).WithMany(p => p.JudgeUserCreateNavigations)
                 .HasForeignKey(d => d.UserCreate)
-                .HasConstraintName("FK__judges__user_cre__70DDC3D8");
+                .HasConstraintName("FK__judges__user_cre__628FA481");
         });
 
         modelBuilder.Entity<Manager>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__managers__3213E83FEAB4C26C");
+            entity.HasKey(e => e.Id).HasName("PK__managers__3213E83F74F74D00");
 
             entity.ToTable("managers");
 
@@ -414,12 +415,12 @@ public partial class InstituteOfFineArtsContext : DbContext
 
             entity.HasOne(d => d.Role).WithMany(p => p.Managers)
                 .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("FK__managers__role_i__5070F446");
+                .HasConstraintName("FK__managers__role_i__6477ECF3");
         });
 
         modelBuilder.Entity<Prize>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__prizes__3213E83F76BEE8E8");
+            entity.HasKey(e => e.Id).HasName("PK__prizes__3213E83F260BD9C7");
 
             entity.ToTable("prizes");
 
@@ -453,20 +454,20 @@ public partial class InstituteOfFineArtsContext : DbContext
 
             entity.HasOne(d => d.Conpetition).WithMany(p => p.Prizes)
                 .HasForeignKey(d => d.ConpetitionId)
-                .HasConstraintName("FK__prizes__conpetit__5165187F");
+                .HasConstraintName("FK__prizes__conpetit__656C112C");
 
             entity.HasOne(d => d.UserActiveNavigation).WithMany(p => p.PrizeUserActiveNavigations)
                 .HasForeignKey(d => d.UserActive)
-                .HasConstraintName("FK__prizes__user_act__534D60F1");
+                .HasConstraintName("FK__prizes__user_act__6754599E");
 
             entity.HasOne(d => d.UserCreateNavigation).WithMany(p => p.PrizeUserCreateNavigations)
                 .HasForeignKey(d => d.UserCreate)
-                .HasConstraintName("FK__prizes__user_cre__52593CB8");
+                .HasConstraintName("FK__prizes__user_cre__66603565");
         });
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__roles__3213E83F80FE48EE");
+            entity.HasKey(e => e.Id).HasName("PK__roles__3213E83FE5171DEA");
 
             entity.ToTable("roles");
 
@@ -485,7 +486,7 @@ public partial class InstituteOfFineArtsContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__users__3213E83FF3843C5F");
+            entity.HasKey(e => e.Id).HasName("PK__users__3213E83F6161536E");
 
             entity.ToTable("users");
 
@@ -534,11 +535,11 @@ public partial class InstituteOfFineArtsContext : DbContext
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("FK__users__role_id__5441852A");
+                .HasConstraintName("FK__users__role_id__68487DD7");
 
             entity.HasOne(d => d.UserCreateNavigation).WithMany(p => p.Users)
                 .HasForeignKey(d => d.UserCreate)
-                .HasConstraintName("FK__users__user_crea__5535A963");
+                .HasConstraintName("FK__users__user_crea__693CA210");
         });
 
         OnModelCreatingPartial(modelBuilder);

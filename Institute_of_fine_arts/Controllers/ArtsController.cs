@@ -11,6 +11,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Institute_of_fine_arts.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Institute_of_fine_arts.Controllers
 {
@@ -92,26 +93,27 @@ namespace Institute_of_fine_arts.Controllers
                             OwnerId = user.Id.Value,
                             CreatedAt = DateTime.Now,
                         };
-                        _context.Arts.Add(art);
-                        _context.SaveChanges();
-                        var s = _context.Arts.FirstOrDefault(a => a.CompetitionId == createArt.CompetitionId && a.OwnerId == user.Id);
-                        s.Slug = $"{competition.Name} - E{s.Id}";
-                        _context.SaveChanges();
                         var emailDto = new EmailDto
                         {
                             To = user.Email,
                             Subject = $"Submit the test successfully {competition.Name}",
                             Body = $"you submitted your entry in the painting contest {competition.Name}with the information:" +
-                            $"<br/> Name:{createArt.Name}" +
-                            $"<br/>Description:{createArt.Description}" +
-                            $"<br/>IsSell:{createArt.IsSell}" +
-                            $"<br/>Price:{createArt.Price}",
+                           $"<br/> Name:{createArt.Name}" +
+                           $"<br/>Description:{createArt.Description}" +
+                           $"<br/>IsSell:{createArt.IsSell}" +
+                           $"<br/>Price:{createArt.Price}",
                             Name = user.Name,
                             Url = createArt.Path,
                         };
-                        
-                      
+
+
                         _emailService.SendEmail(emailDto);
+                        _context.Arts.Add(art);
+                        _context.SaveChanges();
+                        var s = _context.Arts.FirstOrDefault(a => a.CompetitionId == createArt.CompetitionId && a.OwnerId == user.Id);
+                        s.Slug = $"{competition.Name} - E{s.Id}";
+                        _context.SaveChanges();
+                       
                     
                         return Ok();
                     }
@@ -130,22 +132,22 @@ namespace Institute_of_fine_arts.Controllers
                     a.Url = createArt.Url != "" ? createArt.Url : a.Url;
                     a.Path = createArt.Path != "" ? createArt?.Path : a?.Path;
                     a.UpdatedAt = DateTime.Now;
-
-                    _context.SaveChanges();
                     var emailDto = new EmailDto
                     {
                         To = user.Email,
                         Subject = $"Update the test successfully {competition.Name}",
                         Body = $"you updated your entry in the painting contest {competition.Name} with the information:" +
-                      $"<br/> Name:{a.Name}" +
-                      $"<br/>Description:{a.Description}" +
-                      $"<br/>IsSell:{a.IsSell}" +
-                      $"<br/>Price:{a.Price}" +
-                      $"<br/>Updated at:{a.UpdatedAt}",
+                     $"<br/> Name:{createArt.Name}" +
+                     $"<br/>Description:{createArt.Description}" +
+                     $"<br/>IsSell:{createArt.IsSell}" +
+                     $"<br/>Price:{createArt.Price}" +
+                     $"<br/>Updated at:{a.UpdatedAt}",
                         Name = user.Name,
-                        Url = a?.Path,
+                        Url = createArt?.Path,
                     };
                     _emailService.SendEmail(emailDto);
+                    _context.SaveChanges();
+                   
                     return NoContent();
                 }
             }
@@ -163,7 +165,9 @@ namespace Institute_of_fine_arts.Controllers
                 try
                 {
                     var identity = HttpContext.User.Identity as ClaimsIdentity;
+                    if(identity == null) { return BadRequest(); }
                     var user = UserHelper.GetUserDataDto(identity);
+                    if (user == null) { return BadRequest(); }
                     var a = _context.Arts
                         .FirstOrDefault(a =>
                         a.OwnerId == user.Id &&
@@ -267,11 +271,15 @@ namespace Institute_of_fine_arts.Controllers
         [HttpGet]
         [Route("get-one")]
         [AllowAnonymous]
-        public IActionResult getOne(int ownerId, int competitionId)
+        public IActionResult getOne( int competitionId)
         {
             try
             {
-                var data = _context.Arts.FirstOrDefault(a => a.OwnerId == ownerId && a.CompetitionId == competitionId);
+                var identity = HttpContext.User.Identity as ClaimsIdentity;
+                if (identity == null) { return BadRequest(); }
+                var user = UserHelper.GetUserDataDto(identity);
+                if (user == null) { return BadRequest(); }
+                var data = _context.Arts.FirstOrDefault(a => a.OwnerId == user.Id && a.CompetitionId == competitionId);
                 return Ok(data);
             }
             catch (Exception ex)

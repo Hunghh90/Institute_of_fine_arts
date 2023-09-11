@@ -16,7 +16,6 @@ namespace Institute_of_fine_arts.Controllers
     public class CompetitionsController : ControllerBase
     {
         private InstituteOfFineArtsContext _context;
-        private Timer _timer;
         public CompetitionsController(InstituteOfFineArtsContext context)
         {
             _context = context;
@@ -94,7 +93,6 @@ namespace Institute_of_fine_arts.Controllers
                     data.Add(property.Name, property.GetValue(paginations));
                 }
                 UpdateStatus();
-                Awards();
                 return Ok(data);
             }
             else
@@ -139,7 +137,6 @@ namespace Institute_of_fine_arts.Controllers
                     result.Add(property.Name, property.GetValue(pagination));
                 }
                 UpdateStatus();
-                Awards();
                 return Ok(result);
             }
 
@@ -181,7 +178,6 @@ namespace Institute_of_fine_arts.Controllers
             try
             {
                 var data = _context.Competitions.OrderByDescending(c => c.Prizes.Sum(p => p.Price * p.Quantity)).ToList();
-                Awards();
                 return Ok(data);
             }
             catch (Exception ex)
@@ -278,12 +274,10 @@ namespace Institute_of_fine_arts.Controllers
             try
             {
                 DateTime currentTime = DateTime.Now;
-                var competitions = _context.Competitions.Where(x => x.EndDate.AddDays(8) >= currentTime).ToList();
-
+                var competitions = _context.Competitions.Include(a => a.Arts).ToList();
+                if (competitions.Count < 1) { throw new Exception(); };
                 foreach (var competition in competitions)
                 {
-
-
                     if (currentTime < competition.StartDate)
                     {
                         competition.Status = "Upcoming";
@@ -298,11 +292,23 @@ namespace Institute_of_fine_arts.Controllers
                     }
                     else if (currentTime > competition.EndDate.AddDays(7))
                     {
-                        competition.Status = "Finished";
+                        if (competition.Arts != null)
+                        {
+                            foreach (var art in competition.Arts)
+                            {
+                                var evaluate = _context.Evaluates.Where(x => x.ArtId == art.Id).ToList();
+                                if (evaluate.Count > 0)
+                                {
+                                    decimal TotalScore = (decimal)(evaluate.Sum(score => score.Total) / evaluate.Count).Value;
+                                    art.TotalScore = TotalScore;
+                                    _context.SaveChanges();
+                                }
+                            }
+                            competition.Status = "Awards";
+                            _context.SaveChanges();
+                        }
                     }
-
                 }
-
                 _context.SaveChanges();
             }
             catch (Exception ex)
@@ -311,29 +317,6 @@ namespace Institute_of_fine_arts.Controllers
             }
         }
 
-        private void Awards()
-        {
-            try
-            {
-                var competitions = _context.Competitions.Include(a => a.Arts).Where(c => c.Status == "Finished" && c.Awards == 0).ToList();
-                foreach (var competition in competitions)
-                {
-                    if (competition.Arts != null)
-                    {
-                        foreach (var art in competition.Arts)
-                        {
-                            var evaluate = _context.Evaluates.Where(x => x.ArtId == art.Id).ToList();
-                            decimal TotalScore = (decimal)(evaluate.Sum(score => score.Total) / evaluate.Count).Value;
-                            art.TotalScore = TotalScore;
-                            _context.SaveChanges();
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
+       
     }
 }

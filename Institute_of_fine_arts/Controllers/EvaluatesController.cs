@@ -31,10 +31,6 @@ namespace Institute_of_fine_arts.Controllers
                 if (identity == null || !identity.IsAuthenticated) return Unauthorized();
                 var user = UserHelper.GetUserDataDto(identity);
                 if (user == null) return Unauthorized();
-                var judges = _context.Judges.FirstOrDefault(j =>
-                j.CompetitionId == createEvaluates.CompetitionId &&
-                j.TeacherId == user.Id);
-                if (judges == null) return Unauthorized();
                 var art = _context.Arts.FirstOrDefault(x => x.Slug == createEvaluates.ArtSlug);
                 if (art == null) return BadRequest("Art not found");
                 var e = _context.Evaluates.FirstOrDefault(e => e.ArtId == art.Id && e.TeacherId == user.Id);
@@ -51,10 +47,9 @@ namespace Institute_of_fine_arts.Controllers
                         TeacherId = user.Id,
                         CreatedAt = createEvaluates.CreatedAt,
                         Status = "Done",
-                        Total = (decimal)((createEvaluates.Layout + createEvaluates.Content + createEvaluates.Color + createEvaluates.Creative) / 4),
+                        Total = (decimal)(createEvaluates.Layout + createEvaluates.Content + createEvaluates.Color + createEvaluates.Creative) / 4,
                     };
                     _context.Evaluates.Add(evaluate);
-                    art.Granded = 1;
                     _context.SaveChanges();
                     return Ok();
                 }
@@ -66,7 +61,7 @@ namespace Institute_of_fine_arts.Controllers
                     e.Creative = createEvaluates.Creative;
                     e.Feedback = createEvaluates.FeedBack;
                     e.UpdatedAt = DateTime.Now;
-                    e.Total = Math.Round((decimal)(createEvaluates.Layout + createEvaluates.Content + createEvaluates.Color + createEvaluates.Creative) / 4,2);
+                    e.Total = (decimal)(createEvaluates.Layout + createEvaluates.Content + createEvaluates.Color + createEvaluates.Creative) / 4;
                     _context.SaveChanges();
                     return Ok();
                 }
