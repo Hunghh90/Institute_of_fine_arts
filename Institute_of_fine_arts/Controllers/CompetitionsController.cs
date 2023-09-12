@@ -305,7 +305,7 @@ namespace Institute_of_fine_arts.Controllers
                                     _context.SaveChanges();
                                 }
                             }
-                            competition.Status = "Award";
+                            competition.Status = "Finished";
                             _context.SaveChanges();
                         }
                     }
@@ -323,24 +323,26 @@ namespace Institute_of_fine_arts.Controllers
             try
             {
                 var competitions = _context.Competitions.Include(x => x.Arts).Where(x => x.Status == "Award").ToList();
-                
-                if(competitions.Count > 0)
+
+                if (competitions.Count > 0)
                 {
-                    foreach(var competition in competitions)
+                    foreach (var competition in competitions)
                     {
                         var prizes = _context.Prizes.Where(x => x.ConpetitionId == competition.Id).ToList();
                         if (competition.Arts != null)
                         {
 
+
                         }
-                    }    
+                    }
                 }
-            }catch (Exception e)
+            }
+            catch (Exception e)
             {
                 StatusCode(500, e.ToString());
             }
         }
 
-       
+
     }
 }

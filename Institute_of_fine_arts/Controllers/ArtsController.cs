@@ -12,6 +12,10 @@ using Institute_of_fine_arts.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata.Ecma335;
+using System.Net;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace Institute_of_fine_arts.Controllers
 {
@@ -113,8 +117,8 @@ namespace Institute_of_fine_arts.Controllers
                         var s = _context.Arts.FirstOrDefault(a => a.CompetitionId == createArt.CompetitionId && a.OwnerId == user.Id);
                         s.Slug = $"{competition.Name} - E{s.Id}";
                         _context.SaveChanges();
-                       
-                    
+
+
                         return Ok();
                     }
                     else
@@ -147,7 +151,7 @@ namespace Institute_of_fine_arts.Controllers
                     };
                     _emailService.SendEmail(emailDto);
                     _context.SaveChanges();
-                   
+
                     return NoContent();
                 }
             }
@@ -165,7 +169,7 @@ namespace Institute_of_fine_arts.Controllers
                 try
                 {
                     var identity = HttpContext.User.Identity as ClaimsIdentity;
-                    if(identity == null) { return BadRequest(); }
+                    if (identity == null) { return BadRequest(); }
                     var user = UserHelper.GetUserDataDto(identity);
                     if (user == null) { return BadRequest(); }
                     var a = _context.Arts
@@ -271,7 +275,7 @@ namespace Institute_of_fine_arts.Controllers
         [HttpGet]
         [Route("get-one")]
         [AllowAnonymous]
-        public IActionResult getOne( int competitionId)
+        public IActionResult getOne(int competitionId)
         {
             try
             {
@@ -319,6 +323,34 @@ namespace Institute_of_fine_arts.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("download")]
+        [AllowAnonymous]
+        public IActionResult DownloadImage([FromQuery] string imageUrl, int width, int height)
+        {
+            using (var webClient = new WebClient())
+            {
+                byte[] imageBytes = webClient.DownloadData(imageUrl);
+
+                using (var image = Image.Load(imageBytes))
+                {
+                    image.Mutate(x => x.Resize(new ResizeOptions
+                    {
+                        Size = new Size(width, height),
+                        Mode = ResizeMode.Max // Chỉnh sửa chế độ thay đổi kích thước tùy ý
+                    }));
+
+                    using (var outputStream = new MemoryStream())
+                    {
+                        image.Save(outputStream, new JpegEncoder()); // Chỉnh sửa định dạng hình ảnh tùy ý
+
+                        outputStream.Position = 0;
+
+                        return File(outputStream.ToArray(), "image/jpeg", "image.png");
+                    }
+                }
+            }
+        }
     }
 }
 
