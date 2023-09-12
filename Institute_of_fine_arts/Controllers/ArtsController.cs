@@ -298,7 +298,7 @@ namespace Institute_of_fine_arts.Controllers
         {
             try
             {
-                var data = _context.Arts.FirstOrDefault(a => a.Slug == slug);
+                var data = _context.Arts.Include(x=>x.Competition).Include(x => x.Prize).FirstOrDefault(a => a.Slug == slug);
                 return Ok(data);
             }
             catch (Exception ex)

@@ -302,6 +302,7 @@ namespace Institute_of_fine_arts.Controllers
                                 {
                                     decimal TotalScore = (decimal)(evaluate.Sum(score => score.Total) / evaluate.Count).Value;
                                     art.TotalScore = TotalScore;
+                                    art.Granded = 1;
                                     _context.SaveChanges();
                                 }
                             }
